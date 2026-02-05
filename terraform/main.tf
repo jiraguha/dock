@@ -48,6 +48,9 @@ resource "scaleway_instance_server" "rdev" {
 
   security_group_id = scaleway_instance_security_group.rdev.id
 
+  # Enable public IP
+  ip_id = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].id : scaleway_instance_ip.dynamic[0].id
+
   user_data = {
     cloud-init = local.cloud_init
   }
@@ -56,9 +59,11 @@ resource "scaleway_instance_server" "rdev" {
     size_in_gb            = 40
     delete_on_termination = true
   }
+}
 
-  # Attach flexible IP if enabled
-  ip_id = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].id : null
+# Dynamic IP (always created unless using reserved IP)
+resource "scaleway_instance_ip" "dynamic" {
+  count = var.use_reserved_ip ? 0 : 1
 }
 
 # Optional Flexible IP
@@ -66,7 +71,7 @@ resource "scaleway_instance_ip" "rdev" {
   count = var.use_reserved_ip ? 1 : 0
 }
 
-# Compute the public IP (public_ips returns a list)
+# Compute the public IP
 locals {
-  public_ip = scaleway_instance_server.rdev.public_ips[0].address
+  public_ip = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].address : scaleway_instance_ip.dynamic[0].address
 }
