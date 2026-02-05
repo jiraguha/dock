@@ -1,6 +1,6 @@
 # SSH Key
-resource "digitalocean_ssh_key" "rdev" {
-  name       = "${var.droplet_name}-key"
+resource "scaleway_iam_ssh_key" "rdev" {
+  name       = "${var.instance_name}-key"
   public_key = file(pathexpand(var.ssh_public_key_path))
 }
 
@@ -11,33 +11,63 @@ locals {
   })
 }
 
-# Droplet
-resource "digitalocean_droplet" "rdev" {
-  name     = var.droplet_name
-  region   = var.region
-  size     = var.droplet_size
-  image    = "ubuntu-24-04-x64"
-  ssh_keys = [digitalocean_ssh_key.rdev.fingerprint]
+# Security Group
+resource "scaleway_instance_security_group" "rdev" {
+  name                    = "${var.instance_name}-sg"
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "accept"
 
-  user_data = local.cloud_init
+  # SSH
+  inbound_rule {
+    action   = "accept"
+    port     = 22
+    protocol = "TCP"
+  }
 
-  graceful_shutdown = true
+  # Kubernetes API (k3s default port)
+  inbound_rule {
+    action   = "accept"
+    port     = 6443
+    protocol = "TCP"
+  }
 
-  tags = ["rdev", "disposable"]
-
-  lifecycle {
-    create_before_destroy = false
+  # ICMP (ping)
+  inbound_rule {
+    action   = "accept"
+    protocol = "ICMP"
   }
 }
 
-# Optional Reserved IP
-resource "digitalocean_reserved_ip" "rdev" {
-  count  = var.use_reserved_ip ? 1 : 0
-  region = var.region
+# Instance
+resource "scaleway_instance_server" "rdev" {
+  name  = var.instance_name
+  type  = var.instance_type
+  image = "ubuntu_jammy"
+
+  tags = ["rdev", "disposable"]
+
+  security_group_id = scaleway_instance_security_group.rdev.id
+
+  user_data = {
+    cloud-init = local.cloud_init
+  }
+
+  root_volume {
+    size_in_gb            = 40
+    volume_type           = "b_ssd"
+    delete_on_termination = true
+  }
+
+  # Attach flexible IP if enabled
+  ip_id = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].id : null
 }
 
-resource "digitalocean_reserved_ip_assignment" "rdev" {
-  count      = var.use_reserved_ip ? 1 : 0
-  ip_address = digitalocean_reserved_ip.rdev[0].ip_address
-  droplet_id = digitalocean_droplet.rdev.id
+# Optional Flexible IP
+resource "scaleway_instance_ip" "rdev" {
+  count = var.use_reserved_ip ? 1 : 0
+}
+
+# Compute the public IP
+locals {
+  public_ip = scaleway_instance_server.rdev.public_ip
 }

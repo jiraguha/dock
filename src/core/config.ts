@@ -2,37 +2,46 @@ import { homedir } from "os";
 import { join } from "path";
 import type { Config } from "../types";
 
-const DEFAULT_CONFIG: Omit<Config, "doToken"> = {
+const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProjectId"> = {
   sshPublicKeyPath: join(homedir(), ".ssh", "id_ed25519.pub"),
   sshPrivateKeyPath: join(homedir(), ".ssh", "id_ed25519"),
-  region: "nyc1",
-  dropletSize: "s-2vcpu-4gb",
-  dropletName: "rdev-env",
+  region: "fr-par",
+  zone: "fr-par-1",
+  instanceType: "DEV1-M",
+  instanceName: "rdev-env",
   kubernetesEngine: "k3s",
   useReservedIp: false,
 };
 
 export function loadConfig(): Config {
-  const doToken = process.env["DO_TOKEN"];
+  const scwAccessKey = process.env["SCW_ACCESS_KEY"];
+  const scwSecretKey = process.env["SCW_SECRET_KEY"];
+  const scwProjectId = process.env["SCW_PROJECT_ID"];
 
-  if (!doToken) {
+  if (!scwAccessKey || !scwSecretKey || !scwProjectId) {
     throw new Error(
-      "DO_TOKEN environment variable is required.\n" +
-        "Set it with: export DO_TOKEN=your_digitalocean_api_token"
+      "Scaleway credentials are required.\n" +
+        "Set them with:\n" +
+        "  export SCW_ACCESS_KEY=your_access_key\n" +
+        "  export SCW_SECRET_KEY=your_secret_key\n" +
+        "  export SCW_PROJECT_ID=your_project_id"
     );
   }
 
   return {
-    doToken,
+    scwAccessKey,
+    scwSecretKey,
+    scwProjectId,
     ...DEFAULT_CONFIG,
     // Override with env vars if set
     sshPublicKeyPath:
       process.env["SSH_PUBLIC_KEY_PATH"] ?? DEFAULT_CONFIG.sshPublicKeyPath,
     sshPrivateKeyPath:
       process.env["SSH_PRIVATE_KEY_PATH"] ?? DEFAULT_CONFIG.sshPrivateKeyPath,
-    region: process.env["DO_REGION"] ?? DEFAULT_CONFIG.region,
-    dropletSize: process.env["DO_DROPLET_SIZE"] ?? DEFAULT_CONFIG.dropletSize,
-    dropletName: process.env["DO_DROPLET_NAME"] ?? DEFAULT_CONFIG.dropletName,
+    region: process.env["SCW_REGION"] ?? DEFAULT_CONFIG.region,
+    zone: process.env["SCW_ZONE"] ?? DEFAULT_CONFIG.zone,
+    instanceType: process.env["SCW_INSTANCE_TYPE"] ?? DEFAULT_CONFIG.instanceType,
+    instanceName: process.env["SCW_INSTANCE_NAME"] ?? DEFAULT_CONFIG.instanceName,
     kubernetesEngine:
       (process.env["K8S_ENGINE"] as "k3s" | "kind") ??
       DEFAULT_CONFIG.kubernetesEngine,

@@ -1,5 +1,5 @@
 import { detectState } from "../../core/state";
-import { powerOn, getDropletIp } from "../../core/doctl";
+import { powerOn, getInstanceIp } from "../../core/scw";
 import { terraformOutput } from "../../core/terraform";
 import { loadConfig } from "../../core/config";
 import { fetchKubeconfig } from "../../provisioning/kubeconfig";
@@ -23,15 +23,16 @@ export async function start(_args: string[]): Promise<void> {
     return;
   }
 
-  const dropletId = state.details?.dropletId;
-  if (!dropletId) {
-    throw new Error("Could not determine droplet ID");
+  const instanceId = state.details?.instanceId;
+  const zone = state.details?.zone;
+  if (!instanceId || !zone) {
+    throw new Error("Could not determine instance ID or zone");
   }
 
-  await powerOn(dropletId);
+  await powerOn(instanceId, zone);
 
   // Get the new IP (may have changed)
-  const newIp = await getDropletIp(dropletId);
+  const newIp = await getInstanceIp(instanceId, zone);
   const outputs = await terraformOutput();
   const config = loadConfig();
 

@@ -1,8 +1,5 @@
-import {
-  terraformOutput,
-  terraformStateExists,
-} from "./terraform";
-import { getDropletStatus, getDropletIp } from "./doctl";
+import { terraformOutput, terraformStateExists } from "./terraform";
+import { getInstanceState, getInstanceIp } from "./scw";
 import type { EnvironmentState, StateType } from "../types";
 
 export async function detectState(): Promise<EnvironmentState> {
@@ -14,23 +11,24 @@ export async function detectState(): Promise<EnvironmentState> {
 
   const outputs = await terraformOutput();
 
-  if (!outputs || !outputs.droplet_id) {
+  if (!outputs || !outputs.instance_id) {
     return { state: "absent", details: null };
   }
 
-  // Query DigitalOcean for actual droplet status
+  // Query Scaleway for actual instance status
   try {
-    const status = await getDropletStatus(outputs.droplet_id);
-    const state = mapDropletStatus(status);
+    const status = await getInstanceState(outputs.instance_id, outputs.zone);
+    const state = mapInstanceState(status);
 
     if (state === "running") {
       // Get current IP (may have changed after power cycle)
-      const currentIp = await getDropletIp(outputs.droplet_id);
+      const currentIp = await getInstanceIp(outputs.instance_id, outputs.zone);
       return {
         state: "running",
         details: {
           ip: currentIp,
-          dropletId: outputs.droplet_id,
+          instanceId: outputs.instance_id,
+          zone: outputs.zone,
           sshCommand: `ssh -i ${outputs.ssh_key_path} root@${currentIp}`,
           dockerHost: `ssh://root@${currentIp}`,
         },
@@ -40,34 +38,34 @@ export async function detectState(): Promise<EnvironmentState> {
     if (state === "stopped") {
       return {
         state: "stopped",
-        details: { dropletId: outputs.droplet_id },
+        details: { instanceId: outputs.instance_id, zone: outputs.zone },
       };
     }
 
     if (state === "provisioning") {
       return {
         state: "provisioning",
-        details: { dropletId: outputs.droplet_id },
+        details: { instanceId: outputs.instance_id, zone: outputs.zone },
       };
     }
 
     return { state, details: null };
   } catch {
-    // Droplet may have been deleted outside Terraform
+    // Instance may have been deleted outside Terraform
     return { state: "destroyed", details: null };
   }
 }
 
-function mapDropletStatus(status: string): StateType {
+function mapInstanceState(status: string): StateType {
   switch (status) {
-    case "active":
+    case "running":
       return "running";
-    case "off":
+    case "stopped":
+    case "stopped in place":
       return "stopped";
-    case "new":
+    case "starting":
+    case "stopping":
       return "provisioning";
-    case "archive":
-      return "destroyed";
     default:
       return "absent";
   }
@@ -80,7 +78,7 @@ export function formatState(envState: EnvironmentState): string {
     case "absent":
       return "No environment exists. Run 'rdev create' to create one.";
     case "provisioning":
-      return `Environment is provisioning (droplet ID: ${details?.dropletId})`;
+      return `Environment is provisioning (instance ID: ${details?.instanceId})`;
     case "running":
       return [
         "Environment is running",
@@ -89,7 +87,7 @@ export function formatState(envState: EnvironmentState): string {
         `  Docker: export DOCKER_HOST=${details?.dockerHost}`,
       ].join("\n");
     case "stopped":
-      return `Environment is stopped (droplet ID: ${details?.dropletId}). Run 'rdev start' to power on.`;
+      return `Environment is stopped (instance ID: ${details?.instanceId}). Run 'rdev start' to power on.`;
     case "destroyed":
       return "Environment was destroyed externally. Run 'rdev destroy' to clean up state, then 'rdev create' to recreate.";
     default:

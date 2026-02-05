@@ -1,10 +1,13 @@
 export interface Config {
-  doToken: string;
+  scwAccessKey: string;
+  scwSecretKey: string;
+  scwProjectId: string;
   sshPublicKeyPath: string;
   sshPrivateKeyPath: string;
   region: string;
-  dropletSize: string;
-  dropletName: string;
+  zone: string;
+  instanceType: string;
+  instanceName: string;
   kubernetesEngine: "k3s" | "kind";
   useReservedIp: boolean;
 }
@@ -18,9 +21,10 @@ export type StateType =
 
 export interface StateDetails {
   ip?: string;
-  dropletId?: number;
+  instanceId?: string;
   sshCommand?: string;
   dockerHost?: string;
+  zone?: string;
 }
 
 export interface EnvironmentState {
@@ -29,23 +33,27 @@ export interface EnvironmentState {
 }
 
 export interface TerraformOutputs {
-  droplet_id: number;
+  instance_id: string;
   public_ip: string;
   ssh_user: string;
   ssh_key_path: string;
   ssh_command: string;
   docker_host: string;
-  droplet_status: string;
+  instance_state: string;
   kubernetes_engine: string;
+  zone: string;
 }
 
 export interface TerraformVars {
-  do_token: string;
+  scw_access_key: string;
+  scw_secret_key: string;
+  scw_project_id: string;
   ssh_public_key_path?: string;
   ssh_private_key_path?: string;
   region?: string;
-  droplet_size?: string;
-  droplet_name?: string;
+  zone?: string;
+  instance_type?: string;
+  instance_name?: string;
   kubernetes_engine?: string;
   use_reserved_ip?: boolean;
 }

@@ -1,7 +1,18 @@
-variable "do_token" {
-  description = "DigitalOcean API token"
+variable "scw_access_key" {
+  description = "Scaleway access key"
   type        = string
   sensitive   = true
+}
+
+variable "scw_secret_key" {
+  description = "Scaleway secret key"
+  type        = string
+  sensitive   = true
+}
+
+variable "scw_project_id" {
+  description = "Scaleway project ID"
+  type        = string
 }
 
 variable "ssh_public_key_path" {
@@ -17,19 +28,25 @@ variable "ssh_private_key_path" {
 }
 
 variable "region" {
-  description = "DigitalOcean region"
+  description = "Scaleway region"
   type        = string
-  default     = "nyc1"
+  default     = "fr-par"
 }
 
-variable "droplet_size" {
-  description = "Droplet size slug"
+variable "zone" {
+  description = "Scaleway zone"
   type        = string
-  default     = "s-2vcpu-4gb"
+  default     = "fr-par-1"
 }
 
-variable "droplet_name" {
-  description = "Name for the droplet"
+variable "instance_type" {
+  description = "Instance type"
+  type        = string
+  default     = "DEV1-M"
+}
+
+variable "instance_name" {
+  description = "Name for the instance"
   type        = string
   default     = "rdev-env"
 }
@@ -46,7 +63,7 @@ variable "kubernetes_engine" {
 }
 
 variable "use_reserved_ip" {
-  description = "Whether to use a reserved IP"
+  description = "Whether to use a flexible IP"
   type        = bool
   default     = false
 }

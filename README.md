@@ -1,6 +1,6 @@
 # rdev
 
-Disposable remote development environments on DigitalOcean.
+Disposable remote development environments on Scaleway.
 
 **Create → Work → Stop → Resume → Destroy** — with zero local resource consumption.
 
@@ -17,8 +17,8 @@ Local Docker and Kubernetes consume CPU, memory, and battery. Your laptop gets h
 
 - [Bun](https://bun.sh) runtime
 - [Terraform](https://terraform.io) CLI
-- [doctl](https://docs.digitalocean.com/reference/doctl/) CLI (authenticated)
-- DigitalOcean API token
+- [Scaleway CLI](https://github.com/scaleway/scaleway-cli) (`scw`) - authenticated
+- Scaleway API credentials (access key, secret key, project ID)
 - SSH key pair (`~/.ssh/id_ed25519` by default)
 
 ## Installation
@@ -31,24 +31,29 @@ bun install
 
 ## Configuration
 
-Set your DigitalOcean API token:
+Set your Scaleway credentials:
 
 ```bash
-export DO_TOKEN=your_token_here
+export SCW_ACCESS_KEY=your_access_key
+export SCW_SECRET_KEY=your_secret_key
+export SCW_PROJECT_ID=your_project_id
 ```
 
 Optional environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DO_TOKEN` | (required) | DigitalOcean API token |
+| `SCW_ACCESS_KEY` | (required) | Scaleway access key |
+| `SCW_SECRET_KEY` | (required) | Scaleway secret key |
+| `SCW_PROJECT_ID` | (required) | Scaleway project ID |
 | `SSH_PUBLIC_KEY_PATH` | `~/.ssh/id_ed25519.pub` | Path to SSH public key |
 | `SSH_PRIVATE_KEY_PATH` | `~/.ssh/id_ed25519` | Path to SSH private key |
-| `DO_REGION` | `nyc1` | DigitalOcean region |
-| `DO_DROPLET_SIZE` | `s-2vcpu-4gb` | Droplet size |
-| `DO_DROPLET_NAME` | `rdev-env` | Droplet name |
+| `SCW_REGION` | `fr-par` | Scaleway region |
+| `SCW_ZONE` | `fr-par-1` | Scaleway zone |
+| `SCW_INSTANCE_TYPE` | `DEV1-M` | Instance type |
+| `SCW_INSTANCE_NAME` | `rdev-env` | Instance name |
 | `K8S_ENGINE` | `k3s` | Kubernetes engine (`k3s` or `kind`) |
-| `USE_RESERVED_IP` | `false` | Use reserved IP for consistent address |
+| `USE_RESERVED_IP` | `false` | Use flexible IP for consistent address |
 
 ## Usage
 
@@ -59,9 +64,9 @@ Optional environment variables:
 ```
 
 This will:
-1. Create a DigitalOcean droplet
+1. Create a Scaleway instance
 2. Install Docker and k3s via cloud-init
-3. Configure firewall rules
+3. Configure security group
 4. Fetch kubeconfig to your local machine
 
 ### Check status
@@ -148,13 +153,13 @@ docker build -t myapp .
        │
        ▼
 ┌──────────────────────────┐
-│ Terraform + doctl        │  ← IaC layer
+│ Terraform + scw          │  ← IaC layer
 └──────┬───────────────────┘
        │
        ▼
 ┌──────────────────────────┐
-│ DigitalOcean Droplet     │
-│  - Ubuntu 24.04          │
+│ Scaleway Instance        │
+│  - Ubuntu 22.04          │
 │  - Docker                │
 │  - k3s                   │
 └──────────────────────────┘
@@ -162,9 +167,9 @@ docker build -t myapp .
 
 ## Cost
 
-- **Running**: ~$24/month for `s-2vcpu-4gb` ($0.036/hour)
-- **Stopped**: ~$4.80/month (disk storage only)
-- **Destroyed**: $0
+- **Running**: ~€7.99/month for `DEV1-M` (3 vCPU, 4GB RAM)
+- **Stopped**: ~€1.60/month (disk storage only)
+- **Destroyed**: €0
 
 ## License
 

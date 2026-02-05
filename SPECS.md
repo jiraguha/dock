@@ -52,7 +52,7 @@ The system must prioritize:
        ▼
 ┌──────────────────────────┐
 │ IaC Layer (Terraform)    │
-│  - DigitalOcean          │
+│  - scaleway          │
 │  - VM lifecycle          │
 │  - Networking            │
 └──────┬───────────────────┘
@@ -76,11 +76,11 @@ The system must prioritize:
 ### FR-1: Infrastructure must be created **only** via IaC
 
 * Tool: **Terraform**
-* Provider: **DigitalOcean**
+* Provider: **scaleway**
 
 **Resources created:**
 
-* 1 VM (Droplet)
+* 1 VM (Instance)
 * Firewall (SSH + optional ports)
 * Optional reserved IP
 * No managed Kubernetes (VM-based only)
@@ -171,7 +171,7 @@ The system must support **explicit transitions**:
 Implementation:
 
 * `terraform apply` → create / power on
-* `doctl compute droplet-action shutdown` OR Terraform
+* `scw instance server action standby` OR Terraform
 * `terraform destroy` → full disposal
 
 **Sleep is explicitly NOT required**.
@@ -263,7 +263,7 @@ Functions:
 All actions executed via:
 
 * Terraform CLI
-* doctl
+* scw
 * SSH
 
 Electron:
@@ -314,13 +314,13 @@ System must work:
 | Layer              | Choice                         |
 | ------------------ | ------------------------------ |
 | IaC                | Terraform                      |
-| Cloud              | DigitalOcean                   |
+| Cloud              | scaleway                   |
 | OS                 | Ubuntu LTS                     |
 | Kubernetes         | k3s (default)                  |
 | Container runtime  | Docker                         |
 | Local Orchestrator | Node.js / TypeScript           |
 | UI                 | Electron                       |
-| CLI                | terraform, doctl, ssh, kubectl |
+| CLI                | terraform, scw, ssh, kubectl |
 
 ---
 
@@ -357,7 +357,7 @@ Everything achievable today with **boring, reliable tools**.
 
 The only real problem you are solving is this: how to safely and automatically create, control, and discard remote compute environments without installing or maintaining heavy tooling locally. Everything else (Terraform, kubectl, Docker CLI, scripts) is an implementation detail, not something the user should configure or even know about.
 
-From that perspective, the only mandatory input the system needs is credentials to control DigitalOcean. Concretely: a DigitalOcean API token (and optionally an SSH key). That’s it. Once the system can authenticate to DigitalOcean, it can do everything else autonomously: create VMs, inject provisioning logic, manage lifecycle, and destroy resources.
+From that perspective, the only mandatory input the system needs is credentials to control scaleway. Concretely: a scaleway API token (and optionally an SSH key). That’s it. Once the system can authenticate to scaleway, it can do everything else autonomously: create VMs, inject provisioning logic, manage lifecycle, and destroy resources.
 
 All other “inputs” you discussed earlier (profiles, Kubernetes mode, VM size, region, lifecycle rules) are defaults owned by the system, not user input. They live:
 

@@ -34,12 +34,15 @@ export async function create(_args: string[]): Promise<void> {
   await terraformApply({
     autoApprove: true,
     vars: {
-      do_token: config.doToken,
+      scw_access_key: config.scwAccessKey,
+      scw_secret_key: config.scwSecretKey,
+      scw_project_id: config.scwProjectId,
       ssh_public_key_path: config.sshPublicKeyPath,
       ssh_private_key_path: config.sshPrivateKeyPath,
       region: config.region,
-      droplet_size: config.dropletSize,
-      droplet_name: config.dropletName,
+      zone: config.zone,
+      instance_type: config.instanceType,
+      instance_name: config.instanceName,
       kubernetes_engine: config.kubernetesEngine,
       use_reserved_ip: config.useReservedIp,
     },

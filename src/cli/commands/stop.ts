@@ -1,5 +1,5 @@
 import { detectState } from "../../core/state";
-import { shutdown } from "../../core/doctl";
+import { shutdown } from "../../core/scw";
 
 export async function stop(_args: string[]): Promise<void> {
   const state = await detectState();
@@ -19,12 +19,13 @@ export async function stop(_args: string[]): Promise<void> {
     return;
   }
 
-  const dropletId = state.details?.dropletId;
-  if (!dropletId) {
-    throw new Error("Could not determine droplet ID");
+  const instanceId = state.details?.instanceId;
+  const zone = state.details?.zone;
+  if (!instanceId || !zone) {
+    throw new Error("Could not determine instance ID or zone");
   }
 
-  await shutdown(dropletId);
+  await shutdown(instanceId, zone);
 
   console.log("\n----------------------------------------");
   console.log("Environment stopped.");

@@ -59,8 +59,8 @@ Commands:
   destroy       Destroy all resources
   status        Show current state
   ssh           Open SSH connection
-  start         Power on stopped droplet
-  stop          Gracefully shutdown droplet
+  start         Power on stopped instance
+  stop          Gracefully shutdown instance
   kubeconfig    Fetch/update local kubeconfig
   docker-env    Print DOCKER_HOST export command
 
@@ -69,7 +69,9 @@ Options:
   -v, --version  Show version
 
 Environment:
-  DO_TOKEN       DigitalOcean API token (required)
+  SCW_ACCESS_KEY   Scaleway access key (required)
+  SCW_SECRET_KEY   Scaleway secret key (required)
+  SCW_PROJECT_ID   Scaleway project ID (required)
 
 Examples:
   rdev create              # Create new environment
