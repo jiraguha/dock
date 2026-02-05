@@ -66,7 +66,7 @@ resource "scaleway_instance_ip" "rdev" {
   count = var.use_reserved_ip ? 1 : 0
 }
 
-# Compute the public IP
+# Compute the public IP (public_ips returns a list)
 locals {
-  public_ip = scaleway_instance_server.rdev.public_ip
+  public_ip = scaleway_instance_server.rdev.public_ips[0].address
 }
