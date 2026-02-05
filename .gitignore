@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate.d/
+
+# Environment
+.env
+.env.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build
+dist/
+*.tsbuildinfo
+
+# Kubeconfig (generated)
+rdev-kubeconfig

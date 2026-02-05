@@ -1,0 +1,69 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - jq
+  - htop
+
+write_files:
+  - path: /etc/rdev/metadata.json
+    content: |
+      {
+        "kubernetes_engine": "${kubernetes_engine}",
+        "provisioned_at": "WILL_BE_SET_AT_RUNTIME"
+      }
+    permissions: '0644'
+
+  - path: /usr/local/bin/provision-complete
+    content: |
+      #!/bin/bash
+      # Update metadata with actual timestamp
+      jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.provisioned_at = $ts' /etc/rdev/metadata.json > /tmp/metadata.json
+      mv /tmp/metadata.json /etc/rdev/metadata.json
+      touch /var/run/rdev-provisioned
+      echo "Provisioning complete at $(date)" >> /var/log/rdev-provision.log
+    permissions: '0755'
+
+runcmd:
+  # Create metadata directory
+  - mkdir -p /etc/rdev
+
+  # Install Docker
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker root
+
+%{ if kubernetes_engine == "k3s" ~}
+  # Install k3s
+  - curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
+  - mkdir -p /root/.kube
+  - cp /etc/rancher/k3s/k3s.yaml /root/.kube/config
+  - chmod 600 /root/.kube/config
+%{ endif ~}
+%{ if kubernetes_engine == "kind" ~}
+  # Install kind
+  - curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+  - chmod +x /usr/local/bin/kind
+  # Install kubectl
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - rm kubectl
+  # Create kind cluster
+  - kind create cluster --name rdev --wait 5m
+  - mkdir -p /root/.kube
+  - kind get kubeconfig --name rdev > /root/.kube/config
+  - chmod 600 /root/.kube/config
+%{ endif ~}
+
+  # Mark provisioning complete
+  - /usr/local/bin/provision-complete
+
+final_message: "rdev environment ready after $UPTIME seconds"

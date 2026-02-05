@@ -1,0 +1,16 @@
+{
+  "name": "rdev",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "rdev": "./bin/rdev"
+  },
+  "scripts": {
+    "dev": "bun run src/cli/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.0"
+  }
+}
