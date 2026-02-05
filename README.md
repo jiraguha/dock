@@ -31,7 +31,23 @@ bun install
 
 ## Configuration
 
-Set your Scaleway credentials:
+### Option 1: Using `.env` file (recommended)
+
+Copy the example and edit:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` with your credentials:
+
+```env
+SCW_ACCESS_KEY=SCWXXXXXXXXXXXXXXXXX
+SCW_SECRET_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+SCW_PROJECT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+### Option 2: Environment variables
 
 ```bash
 export SCW_ACCESS_KEY=your_access_key
@@ -39,7 +55,7 @@ export SCW_SECRET_KEY=your_secret_key
 export SCW_PROJECT_ID=your_project_id
 ```
 
-Optional environment variables:
+### All configuration options
 
 | Variable | Default | Description |
 |----------|---------|-------------|

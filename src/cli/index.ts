@@ -68,7 +68,7 @@ Options:
   -h, --help     Show this help
   -v, --version  Show version
 
-Environment:
+Environment (set in .env or export):
   SCW_ACCESS_KEY   Scaleway access key (required)
   SCW_SECRET_KEY   Scaleway secret key (required)
   SCW_PROJECT_ID   Scaleway project ID (required)
