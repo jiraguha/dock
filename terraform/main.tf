@@ -54,7 +54,6 @@ resource "scaleway_instance_server" "rdev" {
 
   root_volume {
     size_in_gb            = 40
-    volume_type           = "b_ssd"
     delete_on_termination = true
   }
 
