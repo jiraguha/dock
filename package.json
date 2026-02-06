@@ -7,7 +7,14 @@
   },
   "scripts": {
     "dev": "bun run src/cli/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "bun build --compile --minify src/cli/index.ts --outfile dist/dock",
+    "build:linux": "bun build --compile --minify --target=bun-linux-x64 src/cli/index.ts --outfile dist/dock-linux-x64",
+    "build:linux-arm": "bun build --compile --minify --target=bun-linux-arm64 src/cli/index.ts --outfile dist/dock-linux-arm64",
+    "build:macos": "bun build --compile --minify --target=bun-darwin-x64 src/cli/index.ts --outfile dist/dock-darwin-x64",
+    "build:macos-arm": "bun build --compile --minify --target=bun-darwin-arm64 src/cli/index.ts --outfile dist/dock-darwin-arm64",
+    "build:all": "bun run build:linux && bun run build:linux-arm && bun run build:macos && bun run build:macos-arm",
+    "release": "bun run build:all && cd dist && sha256sum dock-* > checksums.txt"
   },
   "devDependencies": {
     "@types/bun": "latest",

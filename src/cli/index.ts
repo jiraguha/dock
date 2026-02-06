@@ -97,3 +97,6 @@ Examples:
   dock configure --show    # Show remote SSH config
 `);
 }
+
+// Run main when executed directly
+main();

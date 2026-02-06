@@ -52,7 +52,6 @@ Running Docker and Kubernetes locally drains your battery, spins up fans, and tu
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) runtime
 - [Terraform](https://terraform.io) CLI
 - [Scaleway CLI](https://github.com/scaleway/scaleway-cli) (`scw`) - authenticated
 - Scaleway API credentials (access key, secret key, project ID)
@@ -60,10 +59,37 @@ Running Docker and Kubernetes locally drains your battery, spins up fans, and tu
 
 ## Installation
 
+### One-liner (recommended)
+
 ```bash
-git clone <repo-url>
-cd remote-container
+curl -fsSL https://raw.githubusercontent.com/jiraguha/dock/main/install.sh | bash
+```
+
+This downloads the latest release binary and installs it to `/usr/local/bin/dock`.
+
+### Manual download
+
+Download the binary for your platform from [Releases](https://github.com/jiraguha/dock/releases):
+
+| Platform | Binary |
+|----------|--------|
+| Linux x64 | `dock-linux-x64` |
+| Linux ARM64 | `dock-linux-arm64` |
+| macOS x64 | `dock-darwin-x64` |
+| macOS ARM64 (M1/M2/M3) | `dock-darwin-arm64` |
+
+```bash
+chmod +x dock-*
+sudo mv dock-* /usr/local/bin/dock
+```
+
+### Development setup
+
+```bash
+git clone https://github.com/jiraguha/dock.git
+cd dock
 bun install
+./bin/dock --help
 ```
 
 ## Configuration
@@ -254,7 +280,7 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 ## Roadmap
 
 - [ ] **Automatic Shutdown (Kill Switch)** — Heartbeat mechanism to auto-shutdown inactive machines; destroy after 1 week of inactivity
-- [ ] **Single Executable CLI** — Package CLI as a self-contained executable
+- [x] **Single Executable CLI** — Package CLI as a self-contained executable
 - [ ] **Self-Upgrading CLI** — Automatic updates to latest version
 - [ ] **OpenClaw Safe Mode** — Restrict actions to safe, reversible, or sandboxed operations
 - [ ] **MCP Integration** — Machine Control Protocol for advanced lifecycle management
