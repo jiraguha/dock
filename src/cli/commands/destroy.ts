@@ -1,5 +1,20 @@
+import { spawn } from "bun";
 import { loadConfig } from "../../core/config";
-import { terraformDestroy, terraformStateExists } from "../../core/terraform";
+import { terraformDestroy, terraformOutput, terraformStateExists } from "../../core/terraform";
+
+async function removeKnownHost(ip: string): Promise<void> {
+  try {
+    const proc = spawn({
+      cmd: ["ssh-keygen", "-R", ip],
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    await proc.exited;
+    console.log(`Removed SSH known host entry for ${ip}`);
+  } catch {
+    // Ignore errors - host may not be in known_hosts
+  }
+}
 
 export async function destroy(_args: string[]): Promise<void> {
   const stateExists = await terraformStateExists();
@@ -8,6 +23,10 @@ export async function destroy(_args: string[]): Promise<void> {
     console.log("No environment exists. Nothing to destroy.");
     return;
   }
+
+  // Get IP before destroying so we can clean up known_hosts
+  const outputs = await terraformOutput();
+  const instanceIp = outputs?.instance_ip;
 
   console.log("Destroying remote development environment...\n");
   console.log("This will delete:");
@@ -35,6 +54,11 @@ export async function destroy(_args: string[]): Promise<void> {
       use_reserved_ip: config.useReservedIp,
     },
   });
+
+  // Clean up SSH known_hosts entry
+  if (instanceIp) {
+    await removeKnownHost(instanceIp);
+  }
 
   console.log("\n----------------------------------------");
   console.log("Environment destroyed. Zero resources remaining.");

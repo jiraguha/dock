@@ -279,6 +279,17 @@ feat: Add feature-name per features/XX_feature-name.specs.md
 bun run tsc --noEmit        # Type check
 ```
 
+## Contribution Workflow
+
+**Always commit and push after completing a contribution.** This ensures work is saved and available for review.
+
+```bash
+# After making changes:
+git add <files>
+git commit -m "feat: Description of change"
+git push
+```
+
 ## Key Files to Read First
 
 1. `features/*.md` - **Specifications (read these first!)**
