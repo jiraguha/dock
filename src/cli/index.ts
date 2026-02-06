@@ -8,7 +8,9 @@ import { kubeconfig } from "./commands/kubeconfig";
 import { dockerEnv } from "./commands/docker-env";
 import { portforward } from "./commands/portforward";
 import { configure } from "./commands/configure";
+import { upgrade } from "./commands/upgrade";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
+import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
 
 const commands: Record<string, (args: string[]) => Promise<void>> = {
@@ -22,6 +24,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   "docker-env": dockerEnv,
   portforward,
   configure,
+  upgrade,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -49,7 +52,7 @@ export async function main(): Promise<void> {
   }
 
   if (command === "--version" || command === "-v") {
-    console.log("dock 0.1.0");
+    console.log(`dock ${VERSION}`);
     process.exit(0);
   }
 
@@ -90,6 +93,7 @@ Commands:
   docker-env    Print DOCKER_HOST export command
   portforward   Forward ports from remote to local
   configure     Apply SSH server config to remote
+  upgrade       Upgrade dock to latest version
 
 Options:
   -h, --help     Show this help
@@ -116,6 +120,8 @@ Examples:
   dock portforward 9000    # Forward specific port(s)
   dock configure           # Apply SSH config to remote
   dock configure --show    # Show remote SSH config
+  dock upgrade             # Upgrade to latest version
+  dock upgrade --check     # Check for updates only
 `);
 }
 

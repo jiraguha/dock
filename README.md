@@ -239,6 +239,8 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 | `dock portforward` | Forward ports from remote to local |
 | `dock portforward -d` | Forward ports in background |
 | `dock portforward --stop` | Stop background tunnel |
+| `dock upgrade` | Upgrade dock to latest version |
+| `dock upgrade --check` | Check for updates without installing |
 
 ## Lifecycle States
 
@@ -281,7 +283,7 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 
 - [ ] **Automatic Shutdown (Kill Switch)** — Heartbeat mechanism to auto-shutdown inactive machines; destroy after 1 week of inactivity
 - [x] **Single Executable CLI** — Package CLI as a self-contained executable
-- [ ] **Self-Upgrading CLI** — Automatic updates to latest version
+- [x] **Self-Upgrading CLI** — Automatic updates to latest version
 - [ ] **OpenClaw Safe Mode** — Restrict actions to safe, reversible, or sandboxed operations
 - [ ] **MCP Integration** — Machine Control Protocol for advanced lifecycle management
 - [ ] **Multi-Environment Support** — Manage multiple isolated environments (dev, staging, prod)

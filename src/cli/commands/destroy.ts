@@ -26,7 +26,7 @@ export async function destroy(_args: string[]): Promise<void> {
 
   // Get IP before destroying so we can clean up known_hosts
   const outputs = await terraformOutput();
-  const instanceIp = outputs?.instance_ip;
+  const instanceIp = outputs?.public_ip;
 
   console.log("Destroying remote development environment...\n");
   console.log("This will delete:");
