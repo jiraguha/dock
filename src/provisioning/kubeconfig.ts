@@ -3,7 +3,7 @@ import { homedir } from "os";
 import { join } from "path";
 import { existsSync, mkdirSync } from "fs";
 
-const KUBECONFIG_PATH = join(homedir(), ".kube", "rdev-config");
+const KUBECONFIG_PATH = join(homedir(), ".kube", "dock-config");
 
 export async function fetchKubeconfig(
   ip: string,
@@ -86,7 +86,7 @@ export async function waitForKubeReady(
           "-o",
           "ConnectTimeout=5",
           `root@${ip}`,
-          "test -f /var/run/rdev-provisioned && kubectl get nodes",
+          "test -f /var/run/dock-provisioned && kubectl get nodes",
         ],
         stdout: "pipe",
         stderr: "pipe",

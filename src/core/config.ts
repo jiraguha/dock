@@ -8,7 +8,7 @@ const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProject
   region: "fr-par",
   zone: "fr-par-1",
   instanceType: "DEV1-M",
-  instanceName: "rdev-env",
+  instanceName: "dock-env",
   kubernetesEngine: "k3s",
   useReservedIp: false,
   forwardPorts: [8080, 3000, 5432, 6379, 27017],

@@ -2,9 +2,9 @@ import { spawn, type Subprocess } from "bun";
 import { homedir } from "os";
 import { join } from "path";
 
-const RDEV_DIR = join(homedir(), ".rdev");
-const PID_FILE = join(RDEV_DIR, "portforward.pid");
-const SOCKET_FILE = join(RDEV_DIR, "portforward.sock");
+const DOCK_DIR = join(homedir(), ".dock");
+const PID_FILE = join(DOCK_DIR, "portforward.pid");
+const SOCKET_FILE = join(DOCK_DIR, "portforward.sock");
 
 export interface PortForwardOptions {
   ip: string;
@@ -21,9 +21,9 @@ export interface PortForwardSession {
   stop: () => Promise<void>;
 }
 
-async function ensureRdevDir(): Promise<void> {
+async function ensureDockDir(): Promise<void> {
   const { mkdir } = await import("fs/promises");
-  await mkdir(RDEV_DIR, { recursive: true });
+  await mkdir(DOCK_DIR, { recursive: true });
 }
 
 export async function startPortForward(
@@ -35,7 +35,7 @@ export async function startPortForward(
     throw new Error("No ports specified for forwarding");
   }
 
-  await ensureRdevDir();
+  await ensureDockDir();
 
   // Build SSH command with all port forwards
   const sshArgs = [

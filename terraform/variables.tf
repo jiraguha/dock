@@ -48,7 +48,7 @@ variable "instance_type" {
 variable "instance_name" {
   description = "Name for the instance"
   type        = string
-  default     = "rdev-env"
+  default     = "dock-env"
 }
 
 variable "kubernetes_engine" {

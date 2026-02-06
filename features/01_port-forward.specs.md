@@ -20,6 +20,6 @@
 
 4. A list of all **dedicated ports** used by the environment should be maintained, ideally in an environment variable or configuration file.
 
-5. The system should use `rdev portforward` (or a similar command) to automatically forward all required ports listed in the configuration.
+5. The system should use `dock portforward` (or a similar command) to automatically forward all required ports listed in the configuration.
 
 6. The developer should be able to start working locally without needing to configure or run manual SSH port forwarding commands.

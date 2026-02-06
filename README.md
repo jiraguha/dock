@@ -1,15 +1,15 @@
 <div align="center">
 
 ```
-                 _
-   _ __ ___   __| | _____   __
-  | '__/ _ \ / _` |/ _ \ \ / /
-  | | | (_) | (_| |  __/\ V /
-  |_|  \___/ \__,_|\___| \_/
+       _            _
+    __| | ___   ___| | __
+   / _` |/ _ \ / __| |/ /
+  | (_| | (_) | (__|   <
+   \__,_|\___/ \___|_|\_\
 
 ```
 
-# rdev
+# dock
 
 **Disposable Remote Development Environments**
 
@@ -30,11 +30,11 @@ Zero local resource consumption. Full control. Pay only for what you use.
 
 ---
 
-## Why rdev?
+## Why dock?
 
-Running Docker and Kubernetes locally drains your battery, spins up fans, and turns your laptop into a space heater. **rdev** moves all that to a remote VM you fully control.
+Running Docker and Kubernetes locally drains your battery, spins up fans, and turns your laptop into a space heater. **dock** moves all that to a remote VM you fully control.
 
-| | Local Dev | rdev |
+| | Local Dev | dock |
 |---|:---:|:---:|
 | CPU usage | High | Zero |
 | Battery drain | Yes | No |
@@ -104,7 +104,7 @@ export SCW_PROJECT_ID=your_project_id
 | `SCW_REGION` | `fr-par` | Scaleway region |
 | `SCW_ZONE` | `fr-par-1` | Scaleway zone |
 | `SCW_INSTANCE_TYPE` | `DEV1-M` | Instance type |
-| `SCW_INSTANCE_NAME` | `rdev-env` | Instance name |
+| `SCW_INSTANCE_NAME` | `dock-env` | Instance name |
 | `K8S_ENGINE` | `k3s` | Kubernetes engine (`k3s` or `kind`) |
 | `USE_RESERVED_IP` | `false` | Use flexible IP for consistent address |
 | `FORWARD_PORTS` | `8080,3000,5432,6379,27017` | Ports to forward from remote |
@@ -114,7 +114,7 @@ export SCW_PROJECT_ID=your_project_id
 ### Create an environment
 
 ```bash
-./bin/rdev create
+./bin/dock create
 ```
 
 This will:
@@ -126,25 +126,25 @@ This will:
 ### Check status
 
 ```bash
-./bin/rdev status
+./bin/dock status
 ```
 
 ### SSH into the environment
 
 ```bash
-./bin/rdev ssh
+./bin/dock ssh
 ```
 
 Or run a command directly:
 
 ```bash
-./bin/rdev ssh "docker ps"
+./bin/dock ssh "docker ps"
 ```
 
 ### Use kubectl
 
 ```bash
-export KUBECONFIG=~/.kube/rdev-config
+export KUBECONFIG=~/.kube/dock-config
 kubectl get nodes
 kubectl apply -f your-manifests/
 ```
@@ -152,7 +152,7 @@ kubectl apply -f your-manifests/
 ### Use Docker remotely
 
 ```bash
-eval $(./bin/rdev docker-env)
+eval $(./bin/dock docker-env)
 docker ps
 docker build -t myapp .
 ```
@@ -163,19 +163,19 @@ Forward ports from the remote environment to localhost:
 
 ```bash
 # Foreground (blocks terminal)
-./bin/rdev portforward
+./bin/dock portforward
 
 # Background (daemon mode)
-./bin/rdev portforward -d
+./bin/dock portforward -d
 
 # Check status
-./bin/rdev portforward --status
+./bin/dock portforward --status
 
 # Stop background tunnel
-./bin/rdev portforward --stop
+./bin/dock portforward --stop
 
 # Forward specific ports
-./bin/rdev portforward -d 8080 3000
+./bin/dock portforward -d 8080 3000
 ```
 
 Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env var.
@@ -183,36 +183,36 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 ### Power off (preserves data)
 
 ```bash
-./bin/rdev stop
+./bin/dock stop
 ```
 
 ### Power on
 
 ```bash
-./bin/rdev start
+./bin/dock start
 ```
 
 ### Destroy everything
 
 ```bash
-./bin/rdev destroy
+./bin/dock destroy
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `rdev create` | Create and provision a new environment |
-| `rdev destroy` | Destroy all resources (zero cost) |
-| `rdev status` | Show current environment state |
-| `rdev start` | Power on a stopped environment |
-| `rdev stop` | Gracefully shut down (preserves data) |
-| `rdev ssh [cmd]` | SSH into environment or run command |
-| `rdev kubeconfig` | Fetch/update local kubeconfig |
-| `rdev docker-env` | Print DOCKER_HOST export command |
-| `rdev portforward` | Forward ports from remote to local |
-| `rdev portforward -d` | Forward ports in background |
-| `rdev portforward --stop` | Stop background tunnel |
+| `dock create` | Create and provision a new environment |
+| `dock destroy` | Destroy all resources (zero cost) |
+| `dock status` | Show current environment state |
+| `dock start` | Power on a stopped environment |
+| `dock stop` | Gracefully shut down (preserves data) |
+| `dock ssh [cmd]` | SSH into environment or run command |
+| `dock kubeconfig` | Fetch/update local kubeconfig |
+| `dock docker-env` | Print DOCKER_HOST export command |
+| `dock portforward` | Forward ports from remote to local |
+| `dock portforward -d` | Forward ports in background |
+| `dock portforward --stop` | Stop background tunnel |
 
 ## Lifecycle States
 
@@ -228,7 +228,7 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 
 ```
 ┌──────────────┐
-│   rdev CLI   │  ← Bun/TypeScript
+│   dock CLI   │  ← Bun/TypeScript
 └──────┬───────┘
        │
        ▼

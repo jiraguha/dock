@@ -30,7 +30,7 @@ export async function portforward(args: string[]): Promise<void> {
 
   if (state.state !== "running") {
     console.log(`Environment is not running (state: ${state.state})`);
-    console.log("Run 'rdev start' first.");
+    console.log("Run 'dock start' first.");
     return;
   }
 
@@ -47,7 +47,7 @@ export async function portforward(args: string[]): Promise<void> {
     console.log(`  Ports: ${existing.ports.join(", ")}`);
     console.log(`  Started: ${existing.startedAt}`);
     console.log("");
-    console.log("Use 'rdev portforward --stop' to stop it first.");
+    console.log("Use 'dock portforward --stop' to stop it first.");
     return;
   }
 
@@ -102,7 +102,7 @@ export async function portforward(args: string[]): Promise<void> {
     if (background) {
       console.log(`PID: ${session.pid}`);
       console.log("");
-      console.log("Running in background. Use 'rdev portforward --stop' to stop.");
+      console.log("Running in background. Use 'dock portforward --stop' to stop.");
     } else {
       console.log("Press Ctrl+C to stop");
       console.log("");

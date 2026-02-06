@@ -1,9 +1,9 @@
 {
-  "name": "rdev",
+  "name": "dock",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "rdev": "./bin/rdev"
+    "dock": "./bin/dock"
   },
   "scripts": {
     "dev": "bun run src/cli/index.ts",

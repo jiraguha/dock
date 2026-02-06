@@ -7,8 +7,8 @@ export async function dockerEnv(_args: string[]): Promise<void> {
     throw new Error(
       `Cannot get docker env: environment is ${state.state}. ` +
         (state.state === "stopped"
-          ? "Run 'rdev start' first."
-          : "Run 'rdev create' first.")
+          ? "Run 'dock start' first."
+          : "Run 'dock create' first.")
     );
   }
 

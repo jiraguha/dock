@@ -1,5 +1,5 @@
 # SSH Key
-resource "scaleway_iam_ssh_key" "rdev" {
+resource "scaleway_iam_ssh_key" "dock" {
   name       = "${var.instance_name}-key"
   public_key = file(pathexpand(var.ssh_public_key_path))
 }
@@ -12,7 +12,7 @@ locals {
 }
 
 # Security Group
-resource "scaleway_instance_security_group" "rdev" {
+resource "scaleway_instance_security_group" "dock" {
   name                    = "${var.instance_name}-sg"
   inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
@@ -39,17 +39,17 @@ resource "scaleway_instance_security_group" "rdev" {
 }
 
 # Instance
-resource "scaleway_instance_server" "rdev" {
+resource "scaleway_instance_server" "dock" {
   name  = var.instance_name
   type  = var.instance_type
   image = "ubuntu_jammy"
 
-  tags = ["rdev", "disposable"]
+  tags = ["dock", "disposable"]
 
-  security_group_id = scaleway_instance_security_group.rdev.id
+  security_group_id = scaleway_instance_security_group.dock.id
 
   # Enable public IP
-  ip_id = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].id : scaleway_instance_ip.dynamic[0].id
+  ip_id = var.use_reserved_ip ? scaleway_instance_ip.dock[0].id : scaleway_instance_ip.dynamic[0].id
 
   user_data = {
     cloud-init = local.cloud_init
@@ -67,11 +67,11 @@ resource "scaleway_instance_ip" "dynamic" {
 }
 
 # Optional Flexible IP
-resource "scaleway_instance_ip" "rdev" {
+resource "scaleway_instance_ip" "dock" {
   count = var.use_reserved_ip ? 1 : 0
 }
 
 # Compute the public IP
 locals {
-  public_ip = var.use_reserved_ip ? scaleway_instance_ip.rdev[0].address : scaleway_instance_ip.dynamic[0].address
+  public_ip = var.use_reserved_ip ? scaleway_instance_ip.dock[0].address : scaleway_instance_ip.dynamic[0].address
 }

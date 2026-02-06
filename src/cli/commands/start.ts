@@ -8,7 +8,7 @@ export async function start(_args: string[]): Promise<void> {
   const state = await detectState();
 
   if (state.state === "absent") {
-    console.log("No environment exists. Run 'rdev create' first.");
+    console.log("No environment exists. Run 'dock create' first.");
     return;
   }
 

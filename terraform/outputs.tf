@@ -1,6 +1,6 @@
 output "instance_id" {
   description = "The ID of the instance"
-  value       = scaleway_instance_server.rdev.id
+  value       = scaleway_instance_server.dock.id
 }
 
 output "public_ip" {
@@ -30,7 +30,7 @@ output "docker_host" {
 
 output "instance_state" {
   description = "Current instance state"
-  value       = scaleway_instance_server.rdev.state
+  value       = scaleway_instance_server.dock.state
 }
 
 output "kubernetes_engine" {

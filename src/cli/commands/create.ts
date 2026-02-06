@@ -22,7 +22,7 @@ export async function create(_args: string[]): Promise<void> {
 
   if (currentState.state === "stopped") {
     console.log(
-      "Environment exists but is stopped. Use 'rdev start' to power on."
+      "Environment exists but is stopped. Use 'dock start' to power on."
     );
     return;
   }

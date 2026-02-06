@@ -9,8 +9,8 @@ export async function kubeconfig(_args: string[]): Promise<void> {
     throw new Error(
       `Cannot fetch kubeconfig: environment is ${state.state}. ` +
         (state.state === "stopped"
-          ? "Run 'rdev start' first."
-          : "Run 'rdev create' first.")
+          ? "Run 'dock start' first."
+          : "Run 'dock create' first.")
     );
   }
 

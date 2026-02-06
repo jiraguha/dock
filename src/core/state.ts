@@ -81,7 +81,7 @@ export function formatState(envState: EnvironmentState): string {
 
   switch (state) {
     case "absent":
-      return "No environment exists. Run 'rdev create' to create one.";
+      return "No environment exists. Run 'dock create' to create one.";
     case "provisioning":
       return `Environment is provisioning (instance ID: ${details?.instanceId})`;
     case "running":
@@ -92,9 +92,9 @@ export function formatState(envState: EnvironmentState): string {
         `  Docker: export DOCKER_HOST=${details?.dockerHost}`,
       ].join("\n");
     case "stopped":
-      return `Environment is stopped (instance ID: ${details?.instanceId}). Run 'rdev start' to power on.`;
+      return `Environment is stopped (instance ID: ${details?.instanceId}). Run 'dock start' to power on.`;
     case "destroyed":
-      return "Environment was destroyed externally. Run 'rdev destroy' to clean up state, then 'rdev create' to recreate.";
+      return "Environment was destroyed externally. Run 'dock destroy' to clean up state, then 'dock create' to recreate.";
     default:
       return `Unknown state: ${state}`;
   }

@@ -1,6 +1,6 @@
-# Claude Context for rdev
+# Claude Context for dock
 
-This file provides context for Claude to understand and work with the rdev codebase.
+This file provides context for Claude to understand and work with the dock codebase.
 
 ## Specs-Driven Development
 
@@ -37,7 +37,7 @@ Description of what needs to be built and why.
 
 ## Project Overview
 
-**rdev** is a CLI tool for managing disposable remote development environments on Scaleway. It allows developers to:
+**dock** is a CLI tool for managing disposable remote development environments on Scaleway. It allows developers to:
 
 - Create remote VMs with Docker and k3s pre-installed
 - Work remotely via SSH, kubectl, and Docker CLI
@@ -47,7 +47,7 @@ Description of what needs to be built and why.
 ## Architecture
 
 ```
-bin/rdev                    # CLI entry point (shebang script)
+bin/dock                    # CLI entry point (shebang script)
 src/
 ├── cli/
 │   ├── index.ts            # Command router and help
@@ -120,7 +120,7 @@ const key = process.env["SCW_ACCESS_KEY"];
 
 // File paths - always use join()
 import { join } from "path";
-const configPath = join(homedir(), ".rdev", "config.json");
+const configPath = join(homedir(), ".dock", "config.json");
 
 // Spawning processes - use Bun's spawn
 import { spawn } from "bun";
@@ -199,7 +199,7 @@ variable "zone" {
 
 ```hcl
 # Use consistent naming
-resource "scaleway_instance_server" "rdev" {
+resource "scaleway_instance_server" "dock" {
   name = var.instance_name
   # ...
 }
@@ -211,7 +211,7 @@ locals {
 
 # Output everything the CLI needs
 output "instance_id" {
-  value = scaleway_instance_server.rdev.id
+  value = scaleway_instance_server.dock.id
 }
 ```
 
@@ -270,12 +270,12 @@ feat: Add feature-name per features/XX_feature-name.specs.md
 ## Testing Commands
 
 ```bash
-./bin/rdev status           # Check environment
-./bin/rdev create           # Create new environment
-./bin/rdev ssh              # Connect to environment
-./bin/rdev portforward -d   # Forward ports in background
-./bin/rdev stop             # Power off
-./bin/rdev destroy          # Delete everything
+./bin/dock status           # Check environment
+./bin/dock create           # Create new environment
+./bin/dock ssh              # Connect to environment
+./bin/dock portforward -d   # Forward ports in background
+./bin/dock stop             # Power off
+./bin/dock destroy          # Delete everything
 bun run tsc --noEmit        # Type check
 ```
 

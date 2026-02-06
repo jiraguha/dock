@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "rdev",
+      "name": "dock",
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.3.0",

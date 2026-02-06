@@ -29,4 +29,4 @@ dist/
 *.tsbuildinfo
 
 # Kubeconfig (generated)
-rdev-kubeconfig
+dock-kubeconfig

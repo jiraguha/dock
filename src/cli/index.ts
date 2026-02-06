@@ -30,14 +30,14 @@ export async function main(): Promise<void> {
   }
 
   if (command === "--version" || command === "-v") {
-    console.log("rdev 0.1.0");
+    console.log("dock 0.1.0");
     process.exit(0);
   }
 
   const handler = commands[command];
   if (!handler) {
     console.error(`Unknown command: ${command}`);
-    console.error('Run "rdev --help" for usage information.');
+    console.error('Run "dock --help" for usage information.');
     process.exit(1);
   }
 
@@ -52,9 +52,9 @@ export async function main(): Promise<void> {
 
 function printHelp(): void {
   console.log(`
-rdev - Disposable Remote Development Environment
+dock - Disposable Remote Development Environment
 
-Usage: rdev <command> [options]
+Usage: dock <command> [options]
 
 Commands:
   create        Create and provision environment
@@ -78,15 +78,15 @@ Environment (set in .env or export):
   FORWARD_PORTS    Comma-separated ports to forward (default: 8080,3000,5432,6379,27017)
 
 Examples:
-  rdev create              # Create new environment
-  rdev ssh                 # SSH into environment
-  rdev stop                # Power off (preserves data)
-  rdev start               # Power back on
-  rdev destroy             # Delete everything
-  eval $(rdev docker-env)  # Configure Docker CLI
-  rdev portforward         # Forward ports (foreground)
-  rdev portforward -d      # Forward ports (background/daemon)
-  rdev portforward --stop  # Stop background tunnel
-  rdev portforward 9000    # Forward specific port(s)
+  dock create              # Create new environment
+  dock ssh                 # SSH into environment
+  dock stop                # Power off (preserves data)
+  dock start               # Power back on
+  dock destroy             # Delete everything
+  eval $(dock docker-env)  # Configure Docker CLI
+  dock portforward         # Forward ports (foreground)
+  dock portforward -d      # Forward ports (background/daemon)
+  dock portforward --stop  # Stop background tunnel
+  dock portforward 9000    # Forward specific port(s)
 `);
 }

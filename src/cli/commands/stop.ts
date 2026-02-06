@@ -34,7 +34,7 @@ export async function stop(_args: string[]): Promise<void> {
 
   console.log("\n----------------------------------------");
   console.log("Environment stopped.");
-  console.log("Data is preserved. Run 'rdev start' to resume.");
-  console.log("Run 'rdev destroy' to delete everything.");
+  console.log("Data is preserved. Run 'dock start' to resume.");
+  console.log("Run 'dock destroy' to delete everything.");
   console.log("----------------------------------------");
 }

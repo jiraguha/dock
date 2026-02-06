@@ -13,7 +13,7 @@ packages:
   - htop
 
 write_files:
-  - path: /etc/rdev/metadata.json
+  - path: /etc/dock/metadata.json
     content: |
       {
         "kubernetes_engine": "${kubernetes_engine}",
@@ -25,15 +25,15 @@ write_files:
     content: |
       #!/bin/bash
       # Update metadata with actual timestamp
-      jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.provisioned_at = $ts' /etc/rdev/metadata.json > /tmp/metadata.json
-      mv /tmp/metadata.json /etc/rdev/metadata.json
-      touch /var/run/rdev-provisioned
-      echo "Provisioning complete at $(date)" >> /var/log/rdev-provision.log
+      jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.provisioned_at = $ts' /etc/dock/metadata.json > /tmp/metadata.json
+      mv /tmp/metadata.json /etc/dock/metadata.json
+      touch /var/run/dock-provisioned
+      echo "Provisioning complete at $(date)" >> /var/log/dock-provision.log
     permissions: '0755'
 
 runcmd:
   # Create metadata directory
-  - mkdir -p /etc/rdev
+  - mkdir -p /etc/dock
 
   # Install Docker
   - curl -fsSL https://get.docker.com | sh
@@ -57,13 +57,13 @@ runcmd:
   - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   - rm kubectl
   # Create kind cluster
-  - kind create cluster --name rdev --wait 5m
+  - kind create cluster --name dock --wait 5m
   - mkdir -p /root/.kube
-  - kind get kubeconfig --name rdev > /root/.kube/config
+  - kind get kubeconfig --name dock > /root/.kube/config
   - chmod 600 /root/.kube/config
 %{ endif ~}
 
   # Mark provisioning complete
   - /usr/local/bin/provision-complete
 
-final_message: "rdev environment ready after $UPTIME seconds"
+final_message: "dock environment ready after $UPTIME seconds"
