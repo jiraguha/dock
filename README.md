@@ -216,31 +216,14 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 
 ## Roadmap
 
-Planned features for future releases:
-
-**Automatic Shutdown (Kill Switch)**
-Introduce a lightweight heartbeat mechanism ("small machine") that acts as a kill switch. If the CLI does not send a "still alive" signal within a set interval, the small machine will automatically shut down the target machine. Machines inactive for one week will be permanently destroyed to prevent resource leakage.
-
-**Single Executable CLI**
-Package the entire CLI as a single, self-contained executable for easier distribution and usage.
-
-**Self-Upgrading CLI**
-Add support for automatic updates so the CLI can upgrade itself to the latest version.
-
-**OpenClaw Safe Mode Support**
-Integrate a "safe mode" in OpenClaw to restrict actions to safe, reversible, or sandboxed operations — ideal for testing and development environments.
-
-**MCP Integration with rdev**
-Integrate MCP (Machine Control Protocol) with rdev for advanced environment and resource lifecycle management.
-
-**Multi-Environment Support**
-Enable the creation and management of multiple isolated environments (e.g., dev, staging, prod).
-
-**Multi-Provider VM Support**
-Extend support to additional virtual machine providers (AWS, GCP, Azure, etc.), allowing greater flexibility in deployment.
-
-**Web UI**
-Develop a user-friendly web interface for managing environments, machines, and CLI operations.
+- [ ] **Automatic Shutdown (Kill Switch)** — Heartbeat mechanism to auto-shutdown inactive machines; destroy after 1 week of inactivity
+- [ ] **Single Executable CLI** — Package CLI as a self-contained executable
+- [ ] **Self-Upgrading CLI** — Automatic updates to latest version
+- [ ] **OpenClaw Safe Mode** — Restrict actions to safe, reversible, or sandboxed operations
+- [ ] **MCP Integration** — Machine Control Protocol for advanced lifecycle management
+- [ ] **Multi-Environment Support** — Manage multiple isolated environments (dev, staging, prod)
+- [ ] **Multi-Provider VM Support** — AWS, GCP, Azure, and other providers
+- [ ] **Web UI** — Web interface for managing environments and machines
 
 ## License
 
