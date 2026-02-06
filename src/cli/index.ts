@@ -9,6 +9,7 @@ import { dockerEnv } from "./commands/docker-env";
 import { portforward } from "./commands/portforward";
 import { configure } from "./commands/configure";
 import { upgrade } from "./commands/upgrade";
+import { version } from "./commands/version";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
@@ -25,6 +26,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   portforward,
   configure,
   upgrade,
+  version,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -94,6 +96,7 @@ Commands:
   portforward   Forward ports from remote to local
   configure     Apply SSH server config to remote
   upgrade       Upgrade dock to latest version
+  version       Show current version
 
 Options:
   -h, --help     Show this help
@@ -120,8 +123,9 @@ Examples:
   dock portforward 9000    # Forward specific port(s)
   dock configure           # Apply SSH config to remote
   dock configure --show    # Show remote SSH config
+  dock version             # Show current version
+  dock upgrade --check     # Check if update available
   dock upgrade             # Upgrade to latest version
-  dock upgrade --check     # Check for updates only
 `);
 }
 
