@@ -1,6 +1,53 @@
 import { homedir } from "os";
 import { join } from "path";
+import { existsSync } from "fs";
 import type { Config } from "../types";
+
+// Dock home directory for persistent state
+export const DOCK_HOME = join(homedir(), ".dock");
+const DOCK_ENV_FILE = join(DOCK_HOME, ".env");
+
+// Load .env from ~/.dock/.env if it exists
+export async function loadDockEnv(): Promise<void> {
+  // First try ~/.dock/.env
+  if (existsSync(DOCK_ENV_FILE)) {
+    const content = await Bun.file(DOCK_ENV_FILE).text();
+    parseEnvFile(content);
+    return;
+  }
+
+  // Fallback to current directory .env (for development)
+  if (existsSync(".env")) {
+    const content = await Bun.file(".env").text();
+    parseEnvFile(content);
+  }
+}
+
+function parseEnvFile(content: string): void {
+  const lines = content.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip comments and empty lines
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex === -1) continue;
+
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+
+    // Remove quotes if present
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+
+    // Only set if not already defined (env vars take precedence)
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
 
 const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProjectId"> = {
   sshPublicKeyPath: join(homedir(), ".ssh", "id_ed25519.pub"),
@@ -34,10 +81,11 @@ export function loadConfig(): Config {
   if (!scwAccessKey || !scwSecretKey || !scwProjectId) {
     throw new Error(
       "Scaleway credentials are required.\n" +
-        "Set them with:\n" +
-        "  export SCW_ACCESS_KEY=your_access_key\n" +
-        "  export SCW_SECRET_KEY=your_secret_key\n" +
-        "  export SCW_PROJECT_ID=your_project_id"
+        "Create ~/.dock/.env with:\n" +
+        "  SCW_ACCESS_KEY=your_access_key\n" +
+        "  SCW_SECRET_KEY=your_secret_key\n" +
+        "  SCW_PROJECT_ID=your_project_id\n" +
+        "\nOr export as environment variables."
     );
   }
 
@@ -75,6 +123,11 @@ export function loadConfig(): Config {
 }
 
 export function getTerraformDir(): string {
-  // Resolve relative to this file's location
+  // Use ~/.dock/terraform for state and modules
+  return join(DOCK_HOME, "terraform");
+}
+
+export function getSourceTerraformDir(): string {
+  // Source terraform files (for development or bundled)
   return join(import.meta.dir, "..", "..", "terraform");
 }

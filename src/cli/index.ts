@@ -8,6 +8,8 @@ import { kubeconfig } from "./commands/kubeconfig";
 import { dockerEnv } from "./commands/docker-env";
 import { portforward } from "./commands/portforward";
 import { configure } from "./commands/configure";
+import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
+import { existsSync, mkdirSync, cpSync } from "fs";
 
 const commands: Record<string, (args: string[]) => Promise<void>> = {
   create,
@@ -22,6 +24,21 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   configure,
 };
 
+async function ensureDockHome(): Promise<void> {
+  // Create ~/.dock if it doesn't exist
+  if (!existsSync(DOCK_HOME)) {
+    mkdirSync(DOCK_HOME, { recursive: true });
+  }
+
+  // Copy terraform files to ~/.dock/terraform if not present
+  const terraformDir = getTerraformDir();
+  const sourceTerraformDir = getSourceTerraformDir();
+
+  if (!existsSync(terraformDir) && existsSync(sourceTerraformDir)) {
+    cpSync(sourceTerraformDir, terraformDir, { recursive: true });
+  }
+}
+
 export async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
@@ -35,6 +52,10 @@ export async function main(): Promise<void> {
     console.log("dock 0.1.0");
     process.exit(0);
   }
+
+  // Initialize dock home and load environment
+  await ensureDockHome();
+  await loadDockEnv();
 
   const handler = commands[command];
   if (!handler) {
@@ -74,7 +95,7 @@ Options:
   -h, --help     Show this help
   -v, --version  Show version
 
-Environment (set in .env or export):
+Environment (set in ~/.dock/.env or export):
   SCW_ACCESS_KEY     Scaleway access key (required)
   SCW_SECRET_KEY     Scaleway secret key (required)
   SCW_PROJECT_ID     Scaleway project ID (required)
@@ -98,5 +119,7 @@ Examples:
 `);
 }
 
-// Run main when executed directly
-main();
+// Run main when executed directly (not imported)
+if (import.meta.main) {
+  main();
+}
