@@ -3,7 +3,7 @@ import { existsSync, chmodSync, renameSync, unlinkSync } from "fs";
 import { join } from "path";
 import { DOCK_HOME } from "./config";
 
-export const VERSION = "0.1.4";
+export const VERSION = "0.1.5";
 const GITHUB_REPO = "jiraguha/dock";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 
