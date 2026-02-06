@@ -7,6 +7,7 @@ import { stop } from "./commands/stop";
 import { kubeconfig } from "./commands/kubeconfig";
 import { dockerEnv } from "./commands/docker-env";
 import { portforward } from "./commands/portforward";
+import { configure } from "./commands/configure";
 
 const commands: Record<string, (args: string[]) => Promise<void>> = {
   create,
@@ -18,6 +19,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   kubeconfig,
   "docker-env": dockerEnv,
   portforward,
+  configure,
 };
 
 export async function main(): Promise<void> {
@@ -66,16 +68,19 @@ Commands:
   kubeconfig    Fetch/update local kubeconfig
   docker-env    Print DOCKER_HOST export command
   portforward   Forward ports from remote to local
+  configure     Apply SSH server config to remote
 
 Options:
   -h, --help     Show this help
   -v, --version  Show version
 
 Environment (set in .env or export):
-  SCW_ACCESS_KEY   Scaleway access key (required)
-  SCW_SECRET_KEY   Scaleway secret key (required)
-  SCW_PROJECT_ID   Scaleway project ID (required)
-  FORWARD_PORTS    Comma-separated ports to forward (default: 8080,3000,5432,6379,27017)
+  SCW_ACCESS_KEY     Scaleway access key (required)
+  SCW_SECRET_KEY     Scaleway secret key (required)
+  SCW_PROJECT_ID     Scaleway project ID (required)
+  FORWARD_PORTS      Comma-separated ports to forward (default: 8080,3000,5432,6379,27017)
+  SSH_MAX_STARTUPS   SSH MaxStartups setting (default: 10:30:100)
+  SSH_MAX_SESSIONS   SSH MaxSessions setting (default: 20)
 
 Examples:
   dock create              # Create new environment
@@ -88,5 +93,7 @@ Examples:
   dock portforward -d      # Forward ports (background/daemon)
   dock portforward --stop  # Stop background tunnel
   dock portforward 9000    # Forward specific port(s)
+  dock configure           # Apply SSH config to remote
+  dock configure --show    # Show remote SSH config
 `);
 }

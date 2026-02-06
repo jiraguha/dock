@@ -4,7 +4,6 @@ import { join } from "path";
 
 const DOCK_DIR = join(homedir(), ".dock");
 const PID_FILE = join(DOCK_DIR, "portforward.pid");
-const SOCKET_FILE = join(DOCK_DIR, "portforward.sock");
 
 export interface PortForwardOptions {
   ip: string;
@@ -37,7 +36,7 @@ export async function startPortForward(
 
   await ensureDockDir();
 
-  // Build SSH command with all port forwards
+  // Build SSH command with all port forwards - NO ControlMaster
   const sshArgs = [
     "-N", // No command execution
     "-o", "StrictHostKeyChecking=no",
@@ -45,9 +44,6 @@ export async function startPortForward(
     "-o", "ServerAliveInterval=60",
     "-o", "ServerAliveCountMax=3",
     "-o", "ExitOnForwardFailure=yes",
-    "-o", `ControlPath=${SOCKET_FILE}`,
-    "-o", "ControlMaster=yes",
-    "-o", "ControlPersist=yes",
     "-i", sshKeyPath,
   ];
 
@@ -64,7 +60,7 @@ export async function startPortForward(
     stderr: "pipe",
   });
 
-  // Give SSH a moment to establish connection and create control socket
+  // Give SSH a moment to establish connection
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
   // Check if process failed immediately
@@ -76,11 +72,10 @@ export async function startPortForward(
   const pid = proc.pid;
 
   // Save session info
-  await savePid(pid, ports, ip, sshKeyPath, user);
+  await savePid(pid, ports, ip);
 
   if (background) {
-    // In background mode, we don't wait for the process
-    // The ControlMaster keeps the connection alive
+    // In background mode, detach the process
     proc.unref();
   }
 
@@ -89,30 +84,17 @@ export async function startPortForward(
     ports,
     pid,
     stop: async () => {
-      await stopViaControlSocket(ip, sshKeyPath, user);
+      await stopByPid(pid);
     },
   };
 }
 
-async function stopViaControlSocket(
-  ip: string,
-  sshKeyPath: string,
-  user: string
-): Promise<void> {
-  // Use control socket to gracefully close the connection
-  const proc = spawn({
-    cmd: [
-      "ssh",
-      "-o", `ControlPath=${SOCKET_FILE}`,
-      "-O", "exit",
-      "-i", sshKeyPath,
-      `${user}@${ip}`,
-    ],
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-
-  await proc.exited;
+async function stopByPid(pid: number): Promise<void> {
+  try {
+    process.kill(pid, "SIGTERM");
+  } catch {
+    // Process may already be gone
+  }
   await removePidFile();
 }
 
@@ -129,24 +111,18 @@ interface PidInfo {
   pid: number;
   ports: number[];
   ip: string;
-  sshKeyPath: string;
-  user: string;
   startedAt: string;
 }
 
 async function savePid(
   pid: number,
   ports: number[],
-  ip: string,
-  sshKeyPath: string,
-  user: string
+  ip: string
 ): Promise<void> {
   const info: PidInfo = {
     pid,
     ports,
     ip,
-    sshKeyPath,
-    user,
     startedAt: new Date().toISOString(),
   };
   await Bun.write(PID_FILE, JSON.stringify(info, null, 2));
@@ -171,52 +147,34 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
+function isProcessRunning(pid: number): boolean {
+  try {
+    // Sending signal 0 checks if process exists without killing it
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function getRunningTunnel(): Promise<PidInfo | null> {
   try {
-    const socketExists = await fileExists(SOCKET_FILE);
-    const pidExists = await fileExists(PID_FILE);
-
-    if (!socketExists && !pidExists) {
+    if (!(await fileExists(PID_FILE))) {
       return null;
     }
 
-    // If socket exists, tunnel is likely running
-    if (socketExists) {
-      // Try to read PID file for info
-      if (pidExists) {
-        const pidFile = Bun.file(PID_FILE);
-        const content = await pidFile.text();
-        return JSON.parse(content) as PidInfo;
-      }
+    const pidFile = Bun.file(PID_FILE);
+    const content = await pidFile.text();
+    const info = JSON.parse(content) as PidInfo;
 
-      // Socket exists but no PID file - tunnel is running but we don't have full info
-      // Try to get PID from ssh control check
-      const proc = spawn({
-        cmd: ["ssh", "-o", `ControlPath=${SOCKET_FILE}`, "-O", "check", "dummy"],
-        stdout: "pipe",
-        stderr: "pipe",
-      });
-      await proc.exited;
-      const stderr = await new Response(proc.stderr).text();
-      const pidMatch = stderr.match(/pid=(\d+)/);
-      const pid = pidMatch?.[1] ? parseInt(pidMatch[1], 10) : 0;
-
-      return {
-        pid,
-        ports: [],
-        ip: "",
-        sshKeyPath: "",
-        user: "root",
-        startedAt: "",
-      };
-    }
-
-    // PID file exists but socket doesn't - stale state
-    if (pidExists) {
+    // Check if process is actually running
+    if (!isProcessRunning(info.pid)) {
+      // Stale PID file, clean up
       await removePidFile();
+      return null;
     }
 
-    return null;
+    return info;
   } catch {
     return null;
   }
@@ -225,68 +183,30 @@ export async function getRunningTunnel(): Promise<PidInfo | null> {
 export async function stopRunningTunnel(): Promise<boolean> {
   const info = await getRunningTunnel();
 
-  // Try to stop via control socket
-  try {
-    if (await fileExists(SOCKET_FILE)) {
-      const proc = spawn({
-        cmd: [
-          "ssh",
-          "-o", `ControlPath=${SOCKET_FILE}`,
-          "-O", "exit",
-          `${info?.ip || "dummy"}`,
-        ],
-        stdout: "pipe",
-        stderr: "pipe",
-      });
-      await proc.exited;
-    }
-  } catch {
-    // Ignore errors
+  if (!info) {
+    return false;
   }
 
-  // Also try to kill by PID if we have it
-  if (info?.pid) {
-    try {
-      process.kill(info.pid, "SIGTERM");
-    } catch {
-      // Process may already be gone
+  // Kill by PID
+  try {
+    process.kill(info.pid, "SIGTERM");
+
+    // Wait a moment for graceful shutdown
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Force kill if still running
+    if (isProcessRunning(info.pid)) {
+      process.kill(info.pid, "SIGKILL");
     }
+  } catch {
+    // Process may already be gone
   }
 
   await removePidFile();
-
-  // Clean up socket file
-  try {
-    const { unlink } = await import("fs/promises");
-    await unlink(SOCKET_FILE);
-  } catch {
-    // Ignore
-  }
-
   return true;
 }
 
 export async function checkTunnelHealth(): Promise<boolean> {
-  try {
-    if (!(await fileExists(SOCKET_FILE))) {
-      return false;
-    }
-
-    // Use control socket to check status
-    const proc = spawn({
-      cmd: [
-        "ssh",
-        "-o", `ControlPath=${SOCKET_FILE}`,
-        "-O", "check",
-        "dummy",
-      ],
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-
-    await proc.exited;
-    return proc.exitCode === 0;
-  } catch {
-    return false;
-  }
+  const info = await getRunningTunnel();
+  return info !== null;
 }

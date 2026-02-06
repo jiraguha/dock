@@ -1,3 +1,8 @@
+export interface SshServerConfig {
+  maxStartups: string;
+  maxSessions: number;
+}
+
 export interface Config {
   scwAccessKey: string;
   scwSecretKey: string;
@@ -11,6 +16,7 @@ export interface Config {
   kubernetesEngine: "k3s" | "kind";
   useReservedIp: boolean;
   forwardPorts: number[];
+  sshServerConfig: SshServerConfig;
 }
 
 export type StateType =

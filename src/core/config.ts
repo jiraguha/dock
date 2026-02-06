@@ -12,6 +12,10 @@ const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProject
   kubernetesEngine: "k3s",
   useReservedIp: false,
   forwardPorts: [8080, 3000, 5432, 6379, 27017],
+  sshServerConfig: {
+    maxStartups: "10:30:100",
+    maxSessions: 20,
+  },
 };
 
 function parseForwardPorts(envValue: string | undefined): number[] {
@@ -59,6 +63,14 @@ export function loadConfig(): Config {
         ? process.env["USE_RESERVED_IP"] === "true"
         : DEFAULT_CONFIG.useReservedIp,
     forwardPorts: parseForwardPorts(process.env["FORWARD_PORTS"]),
+    sshServerConfig: {
+      maxStartups:
+        process.env["SSH_MAX_STARTUPS"] ?? DEFAULT_CONFIG.sshServerConfig.maxStartups,
+      maxSessions:
+        process.env["SSH_MAX_SESSIONS"] !== undefined
+          ? parseInt(process.env["SSH_MAX_SESSIONS"], 10)
+          : DEFAULT_CONFIG.sshServerConfig.maxSessions,
+    },
   };
 }
 
