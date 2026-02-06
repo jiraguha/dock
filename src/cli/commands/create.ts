@@ -1,3 +1,7 @@
+import { spawn } from "bun";
+import { appendFileSync, existsSync, readFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
 import { loadConfig } from "../../core/config";
 import {
   terraformInit,
@@ -6,6 +10,33 @@ import {
 } from "../../core/terraform";
 import { detectState } from "../../core/state";
 import { fetchKubeconfig, waitForKubeReady } from "../../provisioning/kubeconfig";
+
+async function addToKnownHosts(ip: string): Promise<void> {
+  const knownHostsPath = join(homedir(), ".ssh", "known_hosts");
+
+  // Check if already in known_hosts
+  if (existsSync(knownHostsPath)) {
+    const content = readFileSync(knownHostsPath, "utf-8");
+    if (content.includes(ip)) {
+      return; // Already trusted
+    }
+  }
+
+  // Fetch host key using ssh-keyscan
+  const proc = spawn({
+    cmd: ["ssh-keyscan", "-H", ip],
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+
+  const output = await new Response(proc.stdout).text();
+  const exitCode = await proc.exited;
+
+  if (exitCode === 0 && output.trim()) {
+    appendFileSync(knownHostsPath, output);
+    console.log("Added SSH host key to known_hosts");
+  }
+}
 
 export async function create(_args: string[]): Promise<void> {
   console.log("Creating remote development environment...\n");
@@ -55,6 +86,9 @@ export async function create(_args: string[]): Promise<void> {
 
   console.log("\nWaiting for provisioning to complete...");
   await waitForKubeReady(outputs.public_ip, config.sshPrivateKeyPath);
+
+  // Add host key to known_hosts so Docker over SSH works immediately
+  await addToKnownHosts(outputs.public_ip);
 
   console.log("\nFetching kubeconfig...");
   const kubeconfigPath = await fetchKubeconfig(
