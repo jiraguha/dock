@@ -11,3 +11,12 @@ error during connect: ... Host key verification failed.
 
 **Files changed:**
 - `src/cli/commands/create.ts` - Added `addToKnownHosts()` function that runs after provisioning completes
+
+# Issue 2 [RESOLVED]
+
+**Problem:** `dock upgrade` wasn't replacing the correct binary. It replaced `process.argv[0]` which wasn't the installed `/usr/local/bin/dock`.
+
+**Solution:** Use `which dock` to find the actual installed binary location, with fallback to `/usr/local/bin/dock`.
+
+**Files changed:**
+- `src/core/upgrade.ts` - Fixed `getCurrentExecutablePath()` to use `which dock`

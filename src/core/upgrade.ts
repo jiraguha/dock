@@ -138,12 +138,23 @@ async function verifyChecksum(filePath: string, expectedChecksum: string): Promi
   return actualChecksum === expectedChecksum;
 }
 
-function getCurrentExecutablePath(): string {
-  const execPath = process.argv[0];
-  if (!execPath) {
-    throw new Error("Could not determine executable path");
+async function getCurrentExecutablePath(): Promise<string> {
+  // Try to find dock in PATH using 'which'
+  const proc = spawn({
+    cmd: ["which", "dock"],
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+
+  const output = await new Response(proc.stdout).text();
+  const exitCode = await proc.exited;
+
+  if (exitCode === 0 && output.trim()) {
+    return output.trim();
   }
-  return execPath;
+
+  // Fallback to default install location
+  return "/usr/local/bin/dock";
 }
 
 export async function performUpgrade(info: UpgradeInfo): Promise<void> {
@@ -154,7 +165,7 @@ export async function performUpgrade(info: UpgradeInfo): Promise<void> {
   const binaryName = getPlatformBinaryName();
   const tempDir = join(DOCK_HOME, "tmp");
   const tempPath = join(tempDir, `dock-new-${Date.now()}`);
-  const currentPath = getCurrentExecutablePath();
+  const currentPath = await getCurrentExecutablePath();
   const backupPath = `${currentPath}.backup`;
 
   // Ensure temp directory exists
