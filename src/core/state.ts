@@ -15,14 +15,19 @@ export async function detectState(): Promise<EnvironmentState> {
     return { state: "absent", details: null };
   }
 
+  // Extract UUID from instance_id (format: zone/uuid)
+  const instanceUuid = outputs.instance_id.includes("/")
+    ? (outputs.instance_id.split("/")[1] ?? outputs.instance_id)
+    : outputs.instance_id;
+
   // Query Scaleway for actual instance status
   try {
-    const status = await getInstanceState(outputs.instance_id, outputs.zone);
+    const status = await getInstanceState(instanceUuid, outputs.zone);
     const state = mapInstanceState(status);
 
     if (state === "running") {
       // Get current IP (may have changed after power cycle)
-      const currentIp = await getInstanceIp(outputs.instance_id, outputs.zone);
+      const currentIp = await getInstanceIp(instanceUuid, outputs.zone);
       return {
         state: "running",
         details: {

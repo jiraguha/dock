@@ -1,10 +1,21 @@
 import { spawn } from "bun";
 
 export async function runScw(args: string[]): Promise<string> {
+  // Pass Scaleway credentials via environment variables
+  const projectId = process.env["SCW_PROJECT_ID"];
+  const env = {
+    ...process.env,
+    SCW_ACCESS_KEY: process.env["SCW_ACCESS_KEY"],
+    SCW_SECRET_KEY: process.env["SCW_SECRET_KEY"],
+    SCW_DEFAULT_PROJECT_ID: projectId,
+    SCW_DEFAULT_ORGANIZATION_ID: process.env["SCW_ORGANIZATION_ID"] ?? projectId,
+  };
+
   const proc = spawn({
     cmd: ["scw", ...args],
     stdout: "pipe",
     stderr: "pipe",
+    env,
   });
 
   const output = await new Response(proc.stdout).text();
@@ -49,7 +60,8 @@ export async function getInstanceIp(
     "json",
   ]);
   const data = JSON.parse(output);
-  return data.public_ip?.address ?? "";
+  // Try public_ips array first (new API), then fall back to public_ip (old API)
+  return data.public_ips?.[0]?.address ?? data.public_ip?.address ?? "";
 }
 
 export async function powerOn(instanceId: string, zone: string): Promise<void> {
