@@ -3,9 +3,29 @@ import { loadConfig } from "../../core/config";
 import {
   startPortForward,
   formatPortForwardCommand,
+  getRunningTunnel,
+  stopRunningTunnel,
 } from "../../core/portforward";
 
 export async function portforward(args: string[]): Promise<void> {
+  // Check for --stop flag
+  if (args.includes("--stop") || args.includes("-s")) {
+    await handleStop();
+    return;
+  }
+
+  // Check for --status flag
+  if (args.includes("--status")) {
+    await handleStatus();
+    return;
+  }
+
+  // Check for background/daemon mode
+  const background = args.includes("-d") || args.includes("--daemon") || args.includes("--background");
+
+  // Filter out flags to get port numbers
+  const portArgs = args.filter((a) => !a.startsWith("-"));
+
   const state = await detectState();
 
   if (state.state !== "running") {
@@ -19,17 +39,26 @@ export async function portforward(args: string[]): Promise<void> {
     throw new Error("Could not determine instance IP");
   }
 
+  // Check if tunnel is already running
+  const existing = await getRunningTunnel();
+  if (existing) {
+    console.log("Port forwarding is already running:");
+    console.log(`  PID: ${existing.pid}`);
+    console.log(`  Ports: ${existing.ports.join(", ")}`);
+    console.log(`  Started: ${existing.startedAt}`);
+    console.log("");
+    console.log("Use 'rdev portforward --stop' to stop it first.");
+    return;
+  }
+
   const config = loadConfig();
 
-  // Parse additional ports from args (e.g., rdev portforward 9000 9001)
-  const additionalPorts = args
+  // Parse port numbers from args
+  const additionalPorts = portArgs
     .map((p) => parseInt(p, 10))
     .filter((p) => !isNaN(p) && p > 0 && p < 65536);
 
-  const ports =
-    additionalPorts.length > 0
-      ? additionalPorts
-      : config.forwardPorts;
+  const ports = additionalPorts.length > 0 ? additionalPorts : config.forwardPorts;
 
   if (ports.length === 0) {
     console.log("No ports configured for forwarding.");
@@ -40,6 +69,7 @@ export async function portforward(args: string[]): Promise<void> {
   console.log("Starting port forwarding...");
   console.log(`Remote: ${ip}`);
   console.log(`Ports: ${ports.join(", ")}`);
+  console.log(`Mode: ${background ? "background" : "foreground"}`);
   console.log("");
 
   // Show equivalent manual command
@@ -47,6 +77,7 @@ export async function portforward(args: string[]): Promise<void> {
     ip,
     sshKeyPath: config.sshPrivateKeyPath,
     ports,
+    background,
   });
   console.log("Equivalent command:");
   console.log(`  ${manualCmd}`);
@@ -57,6 +88,7 @@ export async function portforward(args: string[]): Promise<void> {
       ip,
       sshKeyPath: config.sshPrivateKeyPath,
       ports,
+      background,
     });
 
     console.log("----------------------------------------");
@@ -66,29 +98,58 @@ export async function portforward(args: string[]): Promise<void> {
       console.log(`  localhost:${port} -> ${ip}:${port}`);
     }
     console.log("----------------------------------------");
-    console.log("Press Ctrl+C to stop");
-    console.log("");
 
-    // Handle graceful shutdown
-    const cleanup = () => {
-      console.log("\nStopping port forwarding...");
-      session.stop();
-      process.exit(0);
-    };
+    if (background) {
+      console.log(`PID: ${session.pid}`);
+      console.log("");
+      console.log("Running in background. Use 'rdev portforward --stop' to stop.");
+    } else {
+      console.log("Press Ctrl+C to stop");
+      console.log("");
 
-    process.on("SIGINT", cleanup);
-    process.on("SIGTERM", cleanup);
+      // Handle graceful shutdown
+      const cleanup = async () => {
+        console.log("\nStopping port forwarding...");
+        await session.stop();
+        process.exit(0);
+      };
 
-    // Wait for the SSH process to exit
-    await session.process.exited;
+      process.on("SIGINT", cleanup);
+      process.on("SIGTERM", cleanup);
 
-    const exitCode = session.process.exitCode;
-    if (exitCode !== 0 && exitCode !== null) {
-      console.log(`SSH tunnel exited with code ${exitCode}`);
+      // Wait for the SSH process to exit
+      await session.process.exited;
+
+      const exitCode = session.process.exitCode;
+      if (exitCode !== 0 && exitCode !== null) {
+        console.log(`SSH tunnel exited with code ${exitCode}`);
+      }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Port forwarding failed: ${message}`);
     process.exit(1);
+  }
+}
+
+async function handleStop(): Promise<void> {
+  const stopped = await stopRunningTunnel();
+  if (stopped) {
+    console.log("Port forwarding stopped.");
+  } else {
+    console.log("No port forwarding tunnel is running.");
+  }
+}
+
+async function handleStatus(): Promise<void> {
+  const info = await getRunningTunnel();
+  if (info) {
+    console.log("Port forwarding is running:");
+    console.log(`  PID: ${info.pid}`);
+    console.log(`  Remote: ${info.ip}`);
+    console.log(`  Ports: ${info.ports.join(", ")}`);
+    console.log(`  Started: ${info.startedAt}`);
+  } else {
+    console.log("No port forwarding tunnel is running.");
   }
 }

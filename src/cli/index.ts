@@ -84,7 +84,9 @@ Examples:
   rdev start               # Power back on
   rdev destroy             # Delete everything
   eval $(rdev docker-env)  # Configure Docker CLI
-  rdev portforward         # Forward configured ports
+  rdev portforward         # Forward ports (foreground)
+  rdev portforward -d      # Forward ports (background/daemon)
+  rdev portforward --stop  # Stop background tunnel
   rdev portforward 9000    # Forward specific port(s)
 `);
 }
