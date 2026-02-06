@@ -6,6 +6,7 @@ import { start } from "./commands/start";
 import { stop } from "./commands/stop";
 import { kubeconfig } from "./commands/kubeconfig";
 import { dockerEnv } from "./commands/docker-env";
+import { portforward } from "./commands/portforward";
 
 const commands: Record<string, (args: string[]) => Promise<void>> = {
   create,
@@ -16,6 +17,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   stop,
   kubeconfig,
   "docker-env": dockerEnv,
+  portforward,
 };
 
 export async function main(): Promise<void> {
@@ -63,6 +65,7 @@ Commands:
   stop          Gracefully shutdown instance
   kubeconfig    Fetch/update local kubeconfig
   docker-env    Print DOCKER_HOST export command
+  portforward   Forward ports from remote to local
 
 Options:
   -h, --help     Show this help
@@ -72,6 +75,7 @@ Environment (set in .env or export):
   SCW_ACCESS_KEY   Scaleway access key (required)
   SCW_SECRET_KEY   Scaleway secret key (required)
   SCW_PROJECT_ID   Scaleway project ID (required)
+  FORWARD_PORTS    Comma-separated ports to forward (default: 8080,3000,5432,6379,27017)
 
 Examples:
   rdev create              # Create new environment
@@ -80,5 +84,7 @@ Examples:
   rdev start               # Power back on
   rdev destroy             # Delete everything
   eval $(rdev docker-env)  # Configure Docker CLI
+  rdev portforward         # Forward configured ports
+  rdev portforward 9000    # Forward specific port(s)
 `);
 }

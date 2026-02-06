@@ -11,7 +11,16 @@ const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProject
   instanceName: "rdev-env",
   kubernetesEngine: "k3s",
   useReservedIp: false,
+  forwardPorts: [8080, 3000, 5432, 6379, 27017],
 };
+
+function parseForwardPorts(envValue: string | undefined): number[] {
+  if (!envValue) return DEFAULT_CONFIG.forwardPorts;
+  return envValue
+    .split(",")
+    .map((p) => parseInt(p.trim(), 10))
+    .filter((p) => !isNaN(p) && p > 0 && p < 65536);
+}
 
 export function loadConfig(): Config {
   const scwAccessKey = process.env["SCW_ACCESS_KEY"];
@@ -49,6 +58,7 @@ export function loadConfig(): Config {
       process.env["USE_RESERVED_IP"] !== undefined
         ? process.env["USE_RESERVED_IP"] === "true"
         : DEFAULT_CONFIG.useReservedIp,
+    forwardPorts: parseForwardPorts(process.env["FORWARD_PORTS"]),
   };
 }
 

@@ -10,6 +10,7 @@ export interface Config {
   instanceName: string;
   kubernetesEngine: "k3s" | "kind";
   useReservedIp: boolean;
+  forwardPorts: number[];
 }
 
 export type StateType =
