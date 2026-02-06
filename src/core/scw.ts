@@ -70,8 +70,8 @@ export async function powerOn(instanceId: string, zone: string): Promise<void> {
     "instance",
     "server",
     "action",
-    "poweron",
     instanceId,
+    "action=poweron",
     `zone=${zone}`,
     "--wait",
   ]);
@@ -82,30 +82,15 @@ export async function shutdown(
   instanceId: string,
   zone: string
 ): Promise<void> {
-  console.log("Shutting down instance gracefully...");
-  try {
-    await runScw([
-      "instance",
-      "server",
-      "action",
-      "poweroff",
-      instanceId,
-      `zone=${zone}`,
-      "--wait",
-    ]);
-    console.log("Instance shut down.");
-  } catch {
-    // Fall back to terminate if graceful shutdown fails
-    console.log("Graceful shutdown failed, forcing power off...");
-    await runScw([
-      "instance",
-      "server",
-      "action",
-      "terminate",
-      instanceId,
-      `zone=${zone}`,
-      "--wait",
-    ]);
-    console.log("Instance terminated.");
-  }
+  console.log("Shutting down instance...");
+  await runScw([
+    "instance",
+    "server",
+    "action",
+    instanceId,
+    "action=poweroff",
+    `zone=${zone}`,
+    "--wait",
+  ]);
+  console.log("Instance shut down.");
 }
