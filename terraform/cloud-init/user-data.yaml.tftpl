@@ -36,8 +36,11 @@ runcmd:
   - mkdir -p /etc/dock
 
   # Increase SSH connection limits for Docker over SSH + port forwarding
-  - sed -i 's/#MaxStartups.*/MaxStartups 10:30:100/' /etc/ssh/sshd_config
-  - sed -i 's/#MaxSessions.*/MaxSessions 20/' /etc/ssh/sshd_config
+  # High limits needed for tools like supabase that spawn many containers simultaneously
+  - sed -i 's/#MaxStartups.*/MaxStartups ${ssh_max_startups}/' /etc/ssh/sshd_config
+  - sed -i 's/MaxStartups.*/MaxStartups ${ssh_max_startups}/' /etc/ssh/sshd_config
+  - sed -i 's/#MaxSessions.*/MaxSessions ${ssh_max_sessions}/' /etc/ssh/sshd_config
+  - sed -i 's/MaxSessions.*/MaxSessions ${ssh_max_sessions}/' /etc/ssh/sshd_config
   - systemctl restart sshd
 
   # Install Docker

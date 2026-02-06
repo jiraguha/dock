@@ -8,6 +8,8 @@ resource "scaleway_iam_ssh_key" "dock" {
 locals {
   cloud_init = templatefile("${path.module}/cloud-init/user-data.yaml.tftpl", {
     kubernetes_engine = var.kubernetes_engine
+    ssh_max_startups  = var.ssh_max_startups
+    ssh_max_sessions  = var.ssh_max_sessions
   })
 }
 

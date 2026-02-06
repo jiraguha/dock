@@ -12,6 +12,7 @@ const COMMANDS = [
   "stop",
   "kubeconfig",
   "docker-env",
+  "docker-tunnel",
   "portforward",
   "configure",
   "upgrade",
@@ -22,13 +23,16 @@ const COMMANDS = [
 const BASH_COMPLETION = `# dock bash completion
 _dock_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="create destroy status ssh start stop kubeconfig docker-env portforward configure upgrade version autocomplete"
+  local commands="create destroy status ssh start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete"
 
   if [[ \${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
   elif [[ \${COMP_CWORD} -eq 2 ]]; then
     case "\${COMP_WORDS[1]}" in
       portforward)
+        COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
+        ;;
+      docker-tunnel)
         COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
         ;;
       configure)
@@ -59,6 +63,7 @@ _dock() {
     'stop:Gracefully shutdown instance'
     'kubeconfig:Fetch/update local kubeconfig'
     'docker-env:Print DOCKER_HOST export command'
+    'docker-tunnel:Forward Docker socket (single SSH connection)'
     'portforward:Forward ports from remote to local'
     'configure:Apply SSH server config to remote'
     'upgrade:Upgrade dock to latest version'
@@ -80,6 +85,12 @@ _dock() {
           _arguments \\
             '-d[Run in background]' \\
             '--stop[Stop background tunnel]' \\
+            '--status[Show tunnel status]'
+          ;;
+        docker-tunnel)
+          _arguments \\
+            '-d[Run in background]' \\
+            '--stop[Stop Docker tunnel]' \\
             '--status[Show tunnel status]'
           ;;
         configure)

@@ -67,3 +67,15 @@ variable "use_reserved_ip" {
   type        = bool
   default     = false
 }
+
+variable "ssh_max_startups" {
+  description = "SSH MaxStartups setting (start:rate:full)"
+  type        = string
+  default     = "100:30:200"
+}
+
+variable "ssh_max_sessions" {
+  description = "SSH MaxSessions setting"
+  type        = number
+  default     = 100
+}

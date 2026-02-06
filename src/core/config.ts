@@ -60,8 +60,8 @@ const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProject
   useReservedIp: false,
   forwardPorts: [8080, 3000, 5432, 6379, 27017],
   sshServerConfig: {
-    maxStartups: "10:30:100",
-    maxSessions: 20,
+    maxStartups: "100:30:200",
+    maxSessions: 100,
   },
 };
 

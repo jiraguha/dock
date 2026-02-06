@@ -6,6 +6,7 @@ import { start } from "./commands/start";
 import { stop } from "./commands/stop";
 import { kubeconfig } from "./commands/kubeconfig";
 import { dockerEnv } from "./commands/docker-env";
+import { dockerTunnel } from "./commands/docker-tunnel";
 import { portforward } from "./commands/portforward";
 import { configure } from "./commands/configure";
 import { upgrade } from "./commands/upgrade";
@@ -24,6 +25,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   stop,
   kubeconfig,
   "docker-env": dockerEnv,
+  "docker-tunnel": dockerTunnel,
   portforward,
   configure,
   upgrade,
@@ -94,7 +96,8 @@ Commands:
   start         Power on stopped instance
   stop          Gracefully shutdown instance
   kubeconfig    Fetch/update local kubeconfig
-  docker-env    Print DOCKER_HOST export command
+  docker-env    Print DOCKER_HOST export command (SSH per command)
+  docker-tunnel Forward Docker socket (single SSH, for heavy use)
   portforward   Forward ports from remote to local
   configure     Apply SSH server config to remote
   upgrade       Upgrade dock to latest version
@@ -110,8 +113,8 @@ Environment (set in ~/.dock/.env or export):
   SCW_SECRET_KEY     Scaleway secret key (required)
   SCW_PROJECT_ID     Scaleway project ID (required)
   FORWARD_PORTS      Comma-separated ports to forward (default: 8080,3000,5432,6379,27017)
-  SSH_MAX_STARTUPS   SSH MaxStartups setting (default: 10:30:100)
-  SSH_MAX_SESSIONS   SSH MaxSessions setting (default: 20)
+  SSH_MAX_STARTUPS   SSH MaxStartups setting (default: 100:30:200)
+  SSH_MAX_SESSIONS   SSH MaxSessions setting (default: 100)
 
 Examples:
   dock create              # Create new environment
@@ -119,7 +122,9 @@ Examples:
   dock stop                # Power off (preserves data)
   dock start               # Power back on
   dock destroy             # Delete everything
-  eval $(dock docker-env)  # Configure Docker CLI
+  eval $(dock docker-env)  # Configure Docker CLI (simple)
+  dock docker-tunnel -d    # Start Docker socket tunnel (for supabase, etc.)
+  dock docker-tunnel --stop # Stop Docker socket tunnel
   dock portforward         # Forward ports (foreground)
   dock portforward -d      # Forward ports (background/daemon)
   dock portforward --stop  # Stop background tunnel
