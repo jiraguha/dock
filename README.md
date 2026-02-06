@@ -241,6 +241,7 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 | `dock portforward --stop` | Stop background tunnel |
 | `dock upgrade` | Upgrade dock to latest version |
 | `dock upgrade --check` | Check for updates without installing |
+| `dock autocomplete` | Set up shell autocompletion |
 
 ## Lifecycle States
 

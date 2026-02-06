@@ -10,6 +10,7 @@ import { portforward } from "./commands/portforward";
 import { configure } from "./commands/configure";
 import { upgrade } from "./commands/upgrade";
 import { version } from "./commands/version";
+import { autocomplete } from "./commands/autocomplete";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
@@ -27,6 +28,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   configure,
   upgrade,
   version,
+  autocomplete,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -97,6 +99,7 @@ Commands:
   configure     Apply SSH server config to remote
   upgrade       Upgrade dock to latest version
   version       Show current version
+  autocomplete  Set up shell autocompletion
 
 Options:
   -h, --help     Show this help
@@ -126,6 +129,7 @@ Examples:
   dock version             # Show current version
   dock upgrade --check     # Check if update available
   dock upgrade             # Upgrade to latest version
+  dock autocomplete        # Set up shell autocompletion
 `);
 }
 
