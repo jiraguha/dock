@@ -1,17 +1,54 @@
+<div align="center">
+
+```
+                 _
+   _ __ ___   __| | _____   __
+  | '__/ _ \ / _` |/ _ \ \ / /
+  | | | (_) | (_| |  __/\ V /
+  |_|  \___/ \__,_|\___| \_/
+
+```
+
 # rdev
 
-Disposable remote development environments on Scaleway.
+**Disposable Remote Development Environments**
 
-**Create → Work → Stop → Resume → Destroy** — with zero local resource consumption.
+*Your laptop stays cool. Your cloud does the work.*
 
-## Why
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1.svg)](https://bun.sh)
+[![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC.svg)](https://terraform.io)
+[![Scaleway](https://img.shields.io/badge/cloud-Scaleway-4F0599.svg)](https://scaleway.com)
 
-Local Docker and Kubernetes consume CPU, memory, and battery. Your laptop gets hot, fans spin, and battery drains. This tool moves that workload to a remote VM that you control completely.
+---
 
-- **Disposable**: Destroy and recreate anytime, same result
-- **Zero cost when idle**: Power off or destroy when not in use
-- **Feels local**: SSH, kubectl, and docker CLI work transparently
-- **Infrastructure as Code**: Terraform is the single source of truth
+**Create** | **Work** | **Stop** | **Resume** | **Destroy**
+
+Zero local resource consumption. Full control. Pay only for what you use.
+
+</div>
+
+---
+
+## Why rdev?
+
+Running Docker and Kubernetes locally drains your battery, spins up fans, and turns your laptop into a space heater. **rdev** moves all that to a remote VM you fully control.
+
+| | Local Dev | rdev |
+|---|:---:|:---:|
+| CPU usage | High | Zero |
+| Battery drain | Yes | No |
+| Fan noise | Loud | Silent |
+| Cost when idle | N/A | $0 |
+| Reproducible | Maybe | Always |
+
+### Key Features
+
+- **Disposable** — Destroy and recreate anytime, identical results every time
+- **Zero cost when idle** — Power off or destroy when not in use
+- **Feels local** — SSH, kubectl, and Docker CLI work transparently
+- **Infrastructure as Code** — Terraform is the single source of truth
+- **Port forwarding** — Access remote services on localhost
 
 ## Prerequisites
 
