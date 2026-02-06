@@ -25,7 +25,12 @@ export async function stop(_args: string[]): Promise<void> {
     throw new Error("Could not determine instance ID or zone");
   }
 
-  await shutdown(instanceId, zone);
+  // Extract UUID from instance_id (format: zone/uuid)
+  const instanceUuid = instanceId.includes("/")
+    ? (instanceId.split("/")[1] ?? instanceId)
+    : instanceId;
+
+  await shutdown(instanceUuid, zone);
 
   console.log("\n----------------------------------------");
   console.log("Environment stopped.");

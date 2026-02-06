@@ -29,10 +29,15 @@ export async function start(_args: string[]): Promise<void> {
     throw new Error("Could not determine instance ID or zone");
   }
 
-  await powerOn(instanceId, zone);
+  // Extract UUID from instance_id (format: zone/uuid)
+  const instanceUuid = instanceId.includes("/")
+    ? (instanceId.split("/")[1] ?? instanceId)
+    : instanceId;
+
+  await powerOn(instanceUuid, zone);
 
   // Get the new IP (may have changed)
-  const newIp = await getInstanceIp(instanceId, zone);
+  const newIp = await getInstanceIp(instanceUuid, zone);
   const outputs = await terraformOutput();
   const config = loadConfig();
 
