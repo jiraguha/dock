@@ -70,6 +70,7 @@ export SCW_PROJECT_ID=your_project_id
 | `SCW_INSTANCE_NAME` | `rdev-env` | Instance name |
 | `K8S_ENGINE` | `k3s` | Kubernetes engine (`k3s` or `kind`) |
 | `USE_RESERVED_IP` | `false` | Use flexible IP for consistent address |
+| `FORWARD_PORTS` | `8080,3000,5432,6379,27017` | Ports to forward from remote |
 
 ## Usage
 
@@ -119,6 +120,29 @@ docker ps
 docker build -t myapp .
 ```
 
+### Port forwarding
+
+Forward ports from the remote environment to localhost:
+
+```bash
+# Foreground (blocks terminal)
+./bin/rdev portforward
+
+# Background (daemon mode)
+./bin/rdev portforward -d
+
+# Check status
+./bin/rdev portforward --status
+
+# Stop background tunnel
+./bin/rdev portforward --stop
+
+# Forward specific ports
+./bin/rdev portforward -d 8080 3000
+```
+
+Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env var.
+
 ### Power off (preserves data)
 
 ```bash
@@ -149,6 +173,9 @@ docker build -t myapp .
 | `rdev ssh [cmd]` | SSH into environment or run command |
 | `rdev kubeconfig` | Fetch/update local kubeconfig |
 | `rdev docker-env` | Print DOCKER_HOST export command |
+| `rdev portforward` | Forward ports from remote to local |
+| `rdev portforward -d` | Forward ports in background |
+| `rdev portforward --stop` | Stop background tunnel |
 
 ## Lifecycle States
 
