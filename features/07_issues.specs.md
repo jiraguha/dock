@@ -37,6 +37,38 @@ dock ssh-config --stop-master
 
 **Why this works:** ControlMaster creates a persistent "master" SSH connection. All subsequent SSH connections to the same host reuse this master connection via a Unix socket, eliminating the connection storm that causes "Connection reset by peer" errors.
 
+
+dock ssh-config --start-master does two things:
+
+1. Sets up SSH config (same as dock ssh-config)
+2. Starts a background SSH connection that acts as the "master":
+┌─────────────────────────────────────────────────────────┐
+│  Your Machine                                           │
+│                                                         │
+│  ┌─────────────┐                                        │
+│  │ Master SSH  │◄──── Persistent connection ────────┐   │
+│  │ (background)│                                    │   │
+│  └──────┬──────┘                                    │   │
+│         │                                           │   │
+│         ▼ Unix Socket                               │   │
+│  ~/.ssh/sockets/dock-root@IP-22                     │   │
+│         ▲                                           │   │
+│         │                                           ▼   │
+│  ┌──────┴──────┐    ┌──────────────┐    ┌──────────────┐
+│  │ docker ps   │    │ docker build │    │ supabase     │
+│  │ (reuses)    │    │ (reuses)     │    │ (reuses)     │
+│  └─────────────┘    └──────────────┘    └──────────────┘
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+                              │
+                              │ Single TCP connection
+                              ▼
+                    ┌─────────────────┐
+                    │  Remote Server  │
+                    │  163.172.x.x    │
+                    └─────────────────┘
+
+
 ---
 
 ## Original Issue Report
