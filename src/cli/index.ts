@@ -2,6 +2,7 @@ import { create } from "./commands/create";
 import { destroy } from "./commands/destroy";
 import { status } from "./commands/status";
 import { ssh } from "./commands/ssh";
+import { sshConfig } from "./commands/ssh-config";
 import { start } from "./commands/start";
 import { stop } from "./commands/stop";
 import { kubeconfig } from "./commands/kubeconfig";
@@ -21,6 +22,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   destroy,
   status,
   ssh,
+  "ssh-config": sshConfig,
   start,
   stop,
   kubeconfig,
@@ -93,6 +95,7 @@ Commands:
   destroy       Destroy all resources
   status        Show current state
   ssh           Open SSH connection
+  ssh-config    Set up SSH multiplexing (ControlMaster)
   start         Power on stopped instance
   stop          Gracefully shutdown instance
   kubeconfig    Fetch/update local kubeconfig
@@ -125,6 +128,8 @@ Examples:
   eval $(dock docker-env)  # Configure Docker CLI (simple)
   dock docker-tunnel -d    # Start Docker socket tunnel (for supabase, etc.)
   dock docker-tunnel --stop # Stop Docker socket tunnel
+  dock ssh-config          # Set up SSH multiplexing for Docker
+  dock ssh-config --start-master # Start master connection
   dock portforward         # Forward ports (foreground)
   dock portforward -d      # Forward ports (background/daemon)
   dock portforward --stop  # Stop background tunnel

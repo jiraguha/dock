@@ -8,6 +8,7 @@ const COMMANDS = [
   "destroy",
   "status",
   "ssh",
+  "ssh-config",
   "start",
   "stop",
   "kubeconfig",
@@ -23,7 +24,7 @@ const COMMANDS = [
 const BASH_COMPLETION = `# dock bash completion
 _dock_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="create destroy status ssh start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete"
+  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete"
 
   if [[ \${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
@@ -34,6 +35,9 @@ _dock_completions() {
         ;;
       docker-tunnel)
         COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
+        ;;
+      ssh-config)
+        COMPREPLY=($(compgen -W "--show --remove --start-master --stop-master" -- "\${cur}"))
         ;;
       configure)
         COMPREPLY=($(compgen -W "--show" -- "\${cur}"))
@@ -59,6 +63,7 @@ _dock() {
     'destroy:Destroy all resources'
     'status:Show current state'
     'ssh:Open SSH connection'
+    'ssh-config:Set up SSH multiplexing (ControlMaster)'
     'start:Power on stopped instance'
     'stop:Gracefully shutdown instance'
     'kubeconfig:Fetch/update local kubeconfig'
@@ -92,6 +97,13 @@ _dock() {
             '-d[Run in background]' \\
             '--stop[Stop Docker tunnel]' \\
             '--status[Show tunnel status]'
+          ;;
+        ssh-config)
+          _arguments \\
+            '--show[Show current config]' \\
+            '--remove[Remove dock SSH config]' \\
+            '--start-master[Start master connection]' \\
+            '--stop-master[Stop master connection]'
           ;;
         configure)
           _arguments '--show[Show remote SSH config]'
