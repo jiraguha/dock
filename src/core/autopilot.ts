@@ -87,7 +87,7 @@ export function removeDockInit(): void {
 /**
  * Get the shell config file path for the current shell
  */
-function getShellConfigPath(): string {
+export function getShellConfigPath(): string {
   const shell = process.env["SHELL"] || "";
   const home = homedir();
 
@@ -107,7 +107,7 @@ function getShellConfigPath(): string {
 /**
  * Check if shell integration is already installed
  */
-function isShellIntegrationInstalled(): boolean {
+export function isShellIntegrationInstalled(): boolean {
   const configPath = getShellConfigPath();
   if (!existsSync(configPath)) return false;
   const content = readFileSync(configPath, "utf-8");
@@ -159,13 +159,6 @@ export async function setupAutoPilot(ip: string, kubeConfigPath: string): Promis
   // Generate dock.init
   generateDockInit(ip, kubeConfigPath);
 
-  // Install shell integration (first time only)
-  const installed = installShellIntegration();
-  if (installed) {
-    const configPath = getShellConfigPath();
-    console.log(`Added auto-pilot integration to ${configPath}`);
-  }
-
   // Run ssh-config to set up SSH multiplexing
   console.log("Setting up SSH multiplexing...");
   const sshConfigProc = spawn({
@@ -189,8 +182,11 @@ export async function setupAutoPilot(ip: string, kubeConfigPath: string): Promis
   console.log("  DOCKER_HOST=ssh://dock");
   console.log(`  KUBECONFIG=${kubeConfigPath}`);
   console.log("");
-  console.log("To apply in current shell, run:");
+  console.log("To apply in current shell:");
   console.log("  source ~/.dock/dock.init");
+  console.log("");
+  console.log("To auto-source in new terminals (one-time setup):");
+  console.log("  dock init");
 }
 
 /**

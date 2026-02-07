@@ -20,12 +20,13 @@ const COMMANDS = [
   "version",
   "autocomplete",
   "connection",
+  "init",
 ];
 
 const BASH_COMPLETION = `# dock bash completion
 _dock_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection"
+  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection init"
 
   if [[ \${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
@@ -51,6 +52,9 @@ _dock_completions() {
         ;;
       connection)
         COMPREPLY=($(compgen -W "--refresh --clean --status" -- "\${cur}"))
+        ;;
+      init)
+        COMPREPLY=($(compgen -W "--remove --help" -- "\${cur}"))
         ;;
     esac
   fi
@@ -79,6 +83,7 @@ _dock() {
     'version:Show current version'
     'autocomplete:Set up shell autocompletion'
     'connection:Manage connections (refresh, clean)'
+    'init:Set up shell integration (one-time)'
   )
 
   _arguments -C \\
@@ -127,6 +132,11 @@ _dock() {
             '--refresh[Restart all connections]' \\
             '--clean[Stop all connections]' \\
             '--status[Show connection status]'
+          ;;
+        init)
+          _arguments \\
+            '--remove[Remove shell integration]' \\
+            '--help[Show help]'
           ;;
       esac
       ;;
