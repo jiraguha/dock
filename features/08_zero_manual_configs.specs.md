@@ -103,3 +103,52 @@ The system should automatically detect the current state and adjust the environm
 - Added explicit `dock init` command for user consent
 - Shell config files are only modified when user explicitly runs `dock init`
 - `install.sh` now runs `dock init` at the end of installation (user consents by running the installer)
+
+# Issue 2 ✅ RESOLVED
+
+**Problem:** After `dock start`, SSH isn't immediately available but we try to fetch kubeconfig right away, causing "Operation timed out" error.
+
+**Solution (v0.1.11):**
+- Added `waitForSsh()` function that retries SSH connection (up to 30 attempts, 2 seconds apart)
+- `dock start` now waits for SSH before fetching kubeconfig
+
+---
+
+<details>
+<summary>Original error log</summary>
+
+❯ dock stop
+Cleaning up auto-pilot...
+Shutting down instance...
+Instance shut down.
+
+----------------------------------------
+Environment stopped.
+Data is preserved. Run 'dock start' to resume.
+Run 'dock destroy' to delete everything.
+----------------------------------------
+❯ dock start
+Powering on instance...
+Instance powered on.
+
+Updating kubeconfig with new IP...
+Fetching kubeconfig from remote...
+Error: Failed to fetch kubeconfig: ssh: connect to host 163.172.189.201 port 22: Operation timed out
+scp: Connection closed
+
+// therefore dock.init is not generated
+
+
+❯ k get pods --all-namespaces
+^X^C // doe not work
+❯ export KUBECONFIG=/Users/jpiraguha/.kube/dock-config
+❯ k get pods --all-namespaces
+NAMESPACE     NAME                                      READY   STATUS      RESTARTS      AGE
+kube-system   coredns-7f496c8d7d-mnbwp                  1/1     Running     1 (10m ago)   4h7m
+kube-system   helm-install-traefik-crd-mb6qf            0/1     Completed   0             4h7m
+kube-system   helm-install-traefik-kmxjw                0/1     Completed   1             4h7m
+kube-system   local-path-provisioner-578895bd58-27fd4   1/1     Running     1 (10m ago)   4h7m
+kube-system   metrics-server-7b9c9c4b9c-l4nhr           1/1     Running     1 (10m ago)   4h7m
+kube-system   svclb-traefik-b23ba2a2-5b
+
+</details>
