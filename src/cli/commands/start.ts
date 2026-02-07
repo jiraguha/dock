@@ -2,7 +2,7 @@ import { detectState } from "../../core/state";
 import { powerOn, getInstanceIp } from "../../core/scw";
 import { terraformOutput } from "../../core/terraform";
 import { loadConfig } from "../../core/config";
-import { fetchKubeconfig } from "../../provisioning/kubeconfig";
+import { fetchKubeconfig, waitForSsh } from "../../provisioning/kubeconfig";
 import { setupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
 import { join } from "path";
 import { homedir } from "os";
@@ -43,6 +43,9 @@ export async function start(_args: string[]): Promise<void> {
   const newIp = await getInstanceIp(instanceUuid, zone);
   const outputs = await terraformOutput();
   const config = loadConfig();
+
+  // Wait for SSH to be available after power on
+  await waitForSsh(newIp, config.sshPrivateKeyPath);
 
   console.log("\nUpdating kubeconfig with new IP...");
   await fetchKubeconfig(newIp, config.sshPrivateKeyPath);

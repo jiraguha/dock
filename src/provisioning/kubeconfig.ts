@@ -62,6 +62,54 @@ export function getKubeconfigPath(): string {
   return KUBECONFIG_PATH;
 }
 
+export async function waitForSsh(
+  ip: string,
+  sshKeyPath: string,
+  maxAttempts = 30,
+  intervalMs = 2000
+): Promise<void> {
+  console.log("Waiting for SSH to be available...");
+
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const proc = spawn({
+        cmd: [
+          "ssh",
+          "-i",
+          sshKeyPath,
+          "-o",
+          "StrictHostKeyChecking=accept-new",
+          "-o",
+          "UserKnownHostsFile=/dev/null",
+          "-o",
+          "LogLevel=ERROR",
+          "-o",
+          "ConnectTimeout=5",
+          `root@${ip}`,
+          "echo ok",
+        ],
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+
+      const exitCode = await proc.exited;
+      if (exitCode === 0) {
+        console.log("SSH is ready.");
+        return;
+      }
+    } catch {
+      // Ignore errors, keep trying
+    }
+
+    if (i < maxAttempts - 1) {
+      process.stdout.write(".");
+      await Bun.sleep(intervalMs);
+    }
+  }
+
+  throw new Error("Timeout waiting for SSH to be available");
+}
+
 export async function waitForKubeReady(
   ip: string,
   sshKeyPath: string,
