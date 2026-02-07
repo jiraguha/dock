@@ -76,13 +76,14 @@ The system should automatically detect the current state and adjust the environm
 
 ### Deliverables
 
-* [ ] Auto-generated `dock.init`
-* [ ] Shell integration logic (auto-append `source ~/.dock/dock.init`)
-* [ ] Auto-run `ssh-config`, `portforward`, `DOCKER_HOST`, `KUBECONFIG` export after `start/create`
-* [ ] Auto-clean/reset before `stop/destroy`
-* [ ] State tracking under `~/.dock/state`
-* [ ] `AUTO_PILOTE` env var support with opt-out
-* [ ] `dock connection --refresh` and `--clean` commands
+* [x] Auto-generated `dock.init`
+* [x] Shell integration logic (via explicit `dock init` command)
+* [x] Auto-run `ssh-config`, `portforward`, `DOCKER_HOST`, `KUBECONFIG` export after `start/create`
+* [x] Auto-clean/reset before `stop/destroy`
+* [x] State tracking under `~/.dock/state`
+* [x] `AUTO_PILOT` env var support with opt-out
+* [x] `dock connection --refresh` and `--clean` commands
+* [x] `dock init` command for explicit shell integration
 
 ---
 
@@ -92,3 +93,13 @@ The system should automatically detect the current state and adjust the environm
 * Shell-aware integration across different shells (bash/zsh/fish)
 * Warning if switching shells without proper sourcing (fallback mode)
 
+
+# Issue 1 ✅ RESOLVED
+
+**Problem:** `installShellIntegration` was called automatically on every `dock create`/`dock start`, reading user's shell config files (which might contain secrets) without explicit consent.
+
+**Solution (v0.1.10):**
+- Removed automatic shell integration from `setupAutoPilot()`
+- Added explicit `dock init` command for user consent
+- Shell config files are only modified when user explicitly runs `dock init`
+- `install.sh` now runs `dock init` at the end of installation (user consents by running the installer)
