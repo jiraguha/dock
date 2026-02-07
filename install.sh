@@ -103,6 +103,15 @@ verify() {
   fi
 }
 
+# Set up shell integration
+setup_shell_integration() {
+  if command -v dock &> /dev/null; then
+    info "Setting up shell integration..."
+    dock init
+    echo ""
+  fi
+}
+
 main() {
   echo ""
   echo "  ____             _    "
@@ -119,6 +128,7 @@ main() {
   install
   setup_dock_home
   verify
+  setup_shell_integration
 
   echo ""
   info "Installation complete!"
@@ -126,6 +136,9 @@ main() {
   echo "Get started:"
   echo "  1. Set up your Scaleway credentials in ~/.dock/.env"
   echo "  2. Run: dock create"
+  echo ""
+  echo "Shell integration has been added. Restart your terminal or run:"
+  echo "  source ~/.dock/dock.init"
   echo ""
   echo "For help: dock --help"
   echo ""
