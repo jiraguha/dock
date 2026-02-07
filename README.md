@@ -290,6 +290,8 @@ Default ports: 8080, 3000, 5432, 6379, 27017. Configure via `FORWARD_PORTS` env 
 - [ ] **Multi-Environment Support** — Manage multiple isolated environments (dev, staging, prod)
 - [ ] **Multi-Provider VM Support** — AWS, GCP, Azure, and other providers
 - [ ] **Web UI** — Web interface for managing environments and machines
+- [ ] **NixOS Integration** — Declarative, reproducible development environments with Nix
+- [ ] **Claude Code Integration** — AI-assisted development workflow with Claude Code
 
 ## License
 
