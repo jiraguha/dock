@@ -1,47 +1,94 @@
-# Zero manual config or auto-pilote mode
+## 🧠 Zero Manual Config / Auto-Pilot Mode
 
-when I start dock I am for to do this:
+### Vision
 
-- eval $(dock docker-env)
-- export KUBECONFIG=/Users/jpiraguha/.kube/dock-config
+Enable a **fully transparent developer experience** where remote environments feel completely local. After running `dock start` or `dock create`, your shell environment is automatically configured for remote Docker and Kubernetes, **without requiring any manual commands** like `eval $(dock docker-env)` or setting `KUBECONFIG`.
 
+The system should automatically detect the current state and adjust the environment accordingly.
 
-which is obvious as started it for remote docker and kubernetes, to take over my local setting! which the core of that project! felling locally even remotly! It need to feels transpent
+---
 
-After I create - I am remote
-After I stop - I go back local
-After I start - I am remote
-After I destroy - I go back local
+### Key Principles
 
-and this with out any other configuation
+* **Remote should feel local.**
+* **State is explicit but automation is default.**
+* **Users should not have to think about `DOCKER_HOST` or `KUBECONFIG`.**
+* **No extra config files are required beyond what's generated.**
 
-btw:
+---
 
-dock ssh-config             
-export DOCKER_HOST=ssh://dock
-dock ssh-config --start-master
+### Core Features
 
-dock portforward 
+1. **`AUTO_PILOTE=true` by default**
+   Environment variable that activates transparent mode. Can be overridden if needed.
 
-should be the default
+2. **Persistent State Tracking**
+   Store machine state in:
 
-## How I imagine it to work
+   ```
+   ~/.dock/state (values: up, down, absent)
+   ```
 
-0. having en env var AUTO_PILOTE=true by default
-1. storing explicite state in the ~/.dock (up, down, absent)
-2. storing a script dock.init:
-dock ssh-config  
-export DOCKER_HOST=ssh://dock
-export KUBECONFIG=/Users/jpiraguha/.kube/dock-config
-3. in ~/.zshrc having sourcing dock.init base on the state, so each time a start a new shell I have the right context
-4. After I create, or start i want the equivalent:
-dock ssh-config  
-export DOCKER_HOST=ssh://dock
-dock ssh-config --start-master
-dock portforward -d
-5. Before I stop, or destroy i want the equivalent:
-dock ssh-config --stop
-dock portforward --stop
-6. as the connect might be instable or broken I want
-dock contection --refesh (stop all and restart all)
-dock contection --clean (stop)
+3. **`dock.init` Script**
+   After any `create` or `start`, a script is generated:
+
+   ```
+   ~/.dock/dock.init
+   ```
+
+   Contents:
+
+   ```bash
+   dock ssh-config  
+   export DOCKER_HOST=ssh://dock
+   export KUBECONFIG=$HOME/.kube/dock-config
+   ```
+
+4. **Shell Auto-Sourcing**
+   Append to `~/.zshrc`, `~/.bashrc`, or `~/.config/fish/config.fish`:
+
+   ```bash
+   [ -f ~/.dock/dock.init ] && source ~/.dock/dock.init
+   ```
+
+5. **State-Based Automation**
+
+   | Command                   | Action                                                                            |
+   | ------------------------- | --------------------------------------------------------------------------------- |
+   | `dock create`             | Generate/init SSH config, set DOCKER_HOST & KUBECONFIG, start master, portforward |
+   | `dock start`              | Same as above                                                                     |
+   | `dock stop`               | Remove env vars, stop master, stop portforward                                    |
+   | `dock destroy`            | Same as above                                                                     |
+   | `dock ssh-config`         | Should be **automatically run** in create/start                                   |
+   | `dock portforward -d`     | Should run by default on start/create                                             |
+   | `dock ssh-config --stop`  | Should run before stop/destroy                                                    |
+   | `dock portforward --stop` | Should run before stop/destroy                                                    |
+
+6. **Connection Health Management**
+
+   * `dock connection --refresh`:
+     Stops and restarts SSH configs and port forwards (used when the remote session breaks or resets).
+
+   * `dock connection --clean`:
+     Stops all active sessions/ports (used to fully disconnect from remote).
+
+---
+
+### Deliverables
+
+* [ ] Auto-generated `dock.init`
+* [ ] Shell integration logic (auto-append `source ~/.dock/dock.init`)
+* [ ] Auto-run `ssh-config`, `portforward`, `DOCKER_HOST`, `KUBECONFIG` export after `start/create`
+* [ ] Auto-clean/reset before `stop/destroy`
+* [ ] State tracking under `~/.dock/state`
+* [ ] `AUTO_PILOTE` env var support with opt-out
+* [ ] `dock connection --refresh` and `--clean` commands
+
+---
+
+### Optional Stretch Features
+
+* CLI prompt indicator (e.g., `[dock ⛴]`) when remote mode is active
+* Shell-aware integration across different shells (bash/zsh/fish)
+* Warning if switching shells without proper sourcing (fallback mode)
+
