@@ -1,5 +1,6 @@
 import { detectState } from "../../core/state";
 import { shutdown } from "../../core/scw";
+import { cleanupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
 
 export async function stop(_args: string[]): Promise<void> {
   const state = await detectState();
@@ -29,6 +30,11 @@ export async function stop(_args: string[]): Promise<void> {
   const instanceUuid = instanceId.includes("/")
     ? (instanceId.split("/")[1] ?? instanceId)
     : instanceId;
+
+  // Cleanup auto-pilot connections before shutdown
+  if (isAutoPilotEnabled()) {
+    await cleanupAutoPilot();
+  }
 
   await shutdown(instanceUuid, zone);
 

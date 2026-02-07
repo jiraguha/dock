@@ -3,6 +3,9 @@ import { powerOn, getInstanceIp } from "../../core/scw";
 import { terraformOutput } from "../../core/terraform";
 import { loadConfig } from "../../core/config";
 import { fetchKubeconfig } from "../../provisioning/kubeconfig";
+import { setupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
+import { join } from "path";
+import { homedir } from "os";
 
 export async function start(_args: string[]): Promise<void> {
   const state = await detectState();
@@ -49,6 +52,15 @@ export async function start(_args: string[]): Promise<void> {
   console.log("----------------------------------------");
   console.log(`IP:     ${newIp}`);
   console.log(`SSH:    ssh -i ${outputs?.ssh_key_path} root@${newIp}`);
-  console.log(`Docker: export DOCKER_HOST=ssh://root@${newIp}`);
-  console.log("----------------------------------------");
+
+  // Auto-pilot setup
+  if (isAutoPilotEnabled()) {
+    console.log("----------------------------------------");
+    console.log("Setting up auto-pilot mode...");
+    const kubeconfigPath = join(homedir(), ".kube", "dock-config");
+    await setupAutoPilot(newIp, kubeconfigPath);
+  } else {
+    console.log(`Docker: export DOCKER_HOST=ssh://root@${newIp}`);
+    console.log("----------------------------------------");
+  }
 }

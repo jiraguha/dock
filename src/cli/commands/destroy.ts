@@ -1,6 +1,7 @@
 import { spawn } from "bun";
 import { loadConfig } from "../../core/config";
 import { terraformDestroy, terraformOutput, terraformStateExists } from "../../core/terraform";
+import { cleanupAutoPilot, setState, isAutoPilotEnabled, removeDockInit } from "../../core/autopilot";
 
 async function removeKnownHost(ip: string): Promise<void> {
   try {
@@ -27,6 +28,11 @@ export async function destroy(_args: string[]): Promise<void> {
   // Get IP before destroying so we can clean up known_hosts
   const outputs = await terraformOutput();
   const instanceIp = outputs?.public_ip;
+
+  // Cleanup auto-pilot connections before destroy
+  if (isAutoPilotEnabled()) {
+    await cleanupAutoPilot();
+  }
 
   console.log("Destroying remote development environment...\n");
   console.log("This will delete:");
@@ -59,6 +65,10 @@ export async function destroy(_args: string[]): Promise<void> {
   if (instanceIp) {
     await removeKnownHost(instanceIp);
   }
+
+  // Update auto-pilot state
+  setState("absent");
+  removeDockInit();
 
   console.log("\n----------------------------------------");
   console.log("Environment destroyed. Zero resources remaining.");

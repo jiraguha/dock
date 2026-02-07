@@ -13,6 +13,7 @@ import { configure } from "./commands/configure";
 import { upgrade } from "./commands/upgrade";
 import { version } from "./commands/version";
 import { autocomplete } from "./commands/autocomplete";
+import { connection } from "./commands/connection";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
@@ -33,6 +34,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   upgrade,
   version,
   autocomplete,
+  connection,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -103,6 +105,7 @@ Commands:
   docker-tunnel Forward Docker socket (single SSH, for heavy use)
   portforward   Forward ports from remote to local
   configure     Apply SSH server config to remote
+  connection    Manage connections (--refresh, --clean)
   upgrade       Upgrade dock to latest version
   version       Show current version
   autocomplete  Set up shell autocompletion
@@ -110,6 +113,11 @@ Commands:
 Options:
   -h, --help     Show this help
   -v, --version  Show version
+
+Auto-Pilot Mode (enabled by default):
+  After create/start, dock automatically sets up SSH multiplexing,
+  port forwarding, and exports DOCKER_HOST/KUBECONFIG.
+  Disable with: AUTO_PILOT=false
 
 Environment (set in ~/.dock/.env or export):
   SCW_ACCESS_KEY     Scaleway access key (required)
@@ -140,6 +148,9 @@ Examples:
   dock upgrade --check     # Check if update available
   dock upgrade             # Upgrade to latest version
   dock autocomplete        # Set up shell autocompletion
+  dock connection          # Show connection status
+  dock connection --refresh # Restart all connections
+  dock connection --clean  # Stop all connections
 `);
 }
 

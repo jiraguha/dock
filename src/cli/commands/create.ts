@@ -10,6 +10,7 @@ import {
 } from "../../core/terraform";
 import { detectState } from "../../core/state";
 import { fetchKubeconfig, waitForKubeReady } from "../../provisioning/kubeconfig";
+import { setupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
 
 async function addToKnownHosts(ip: string): Promise<void> {
   const knownHostsPath = join(homedir(), ".ssh", "known_hosts");
@@ -101,7 +102,15 @@ export async function create(_args: string[]): Promise<void> {
   console.log("----------------------------------------");
   console.log(`IP:         ${outputs.public_ip}`);
   console.log(`SSH:        ${outputs.ssh_command}`);
-  console.log(`Docker:     export DOCKER_HOST=${outputs.docker_host}`);
-  console.log(`Kubeconfig: export KUBECONFIG=${kubeconfigPath}`);
-  console.log("----------------------------------------");
+
+  // Auto-pilot setup
+  if (isAutoPilotEnabled()) {
+    console.log("----------------------------------------");
+    console.log("Setting up auto-pilot mode...");
+    await setupAutoPilot(outputs.public_ip, kubeconfigPath);
+  } else {
+    console.log(`Docker:     export DOCKER_HOST=${outputs.docker_host}`);
+    console.log(`Kubeconfig: export KUBECONFIG=${kubeconfigPath}`);
+    console.log("----------------------------------------");
+  }
 }
