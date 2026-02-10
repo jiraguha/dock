@@ -1,6 +1,7 @@
 import { detectState } from "../../core/state";
 import { shutdown } from "../../core/scw";
 import { cleanupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
+import { trackCommand } from "../../core/analytics";
 
 export async function stop(_args: string[]): Promise<void> {
   const state = await detectState();
@@ -31,16 +32,18 @@ export async function stop(_args: string[]): Promise<void> {
     ? (instanceId.split("/")[1] ?? instanceId)
     : instanceId;
 
-  // Cleanup auto-pilot connections before shutdown
-  if (isAutoPilotEnabled()) {
-    await cleanupAutoPilot();
-  }
+  await trackCommand("stop", async () => {
+    // Cleanup auto-pilot connections before shutdown
+    if (isAutoPilotEnabled()) {
+      await cleanupAutoPilot();
+    }
 
-  await shutdown(instanceUuid, zone);
+    await shutdown(instanceUuid, zone);
 
-  console.log("\n----------------------------------------");
-  console.log("Environment stopped.");
-  console.log("Data is preserved. Run 'dock start' to resume.");
-  console.log("Run 'dock destroy' to delete everything.");
-  console.log("----------------------------------------");
+    console.log("\n----------------------------------------");
+    console.log("Environment stopped.");
+    console.log("Data is preserved. Run 'dock start' to resume.");
+    console.log("Run 'dock destroy' to delete everything.");
+    console.log("----------------------------------------");
+  });
 }

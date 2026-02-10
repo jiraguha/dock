@@ -15,6 +15,7 @@ import { version } from "./commands/version";
 import { autocomplete } from "./commands/autocomplete";
 import { connection } from "./commands/connection";
 import { init } from "./commands/init";
+import { analytics } from "./commands/analytics";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
@@ -37,6 +38,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   autocomplete,
   connection,
   init,
+  analytics,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -109,6 +111,7 @@ Commands:
   configure     Apply SSH server config to remote
   connection    Manage connections (--refresh, --clean)
   init          Set up shell integration (one-time)
+  analytics     Show usage stats and operation history
   upgrade       Upgrade dock to latest version
   version       Show current version
   autocomplete  Set up shell autocompletion
@@ -155,6 +158,8 @@ Examples:
   dock connection --refresh # Restart all connections
   dock connection --clean  # Stop all connections
   dock init                # Set up shell integration (auto-source dock.init)
+  dock analytics           # Show usage stats summary
+  dock analytics --last    # Show last 10 operations
 `);
 }
 

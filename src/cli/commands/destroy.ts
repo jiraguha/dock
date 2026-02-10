@@ -2,6 +2,7 @@ import { spawn } from "bun";
 import { loadConfig } from "../../core/config";
 import { terraformDestroy, terraformOutput, terraformStateExists } from "../../core/terraform";
 import { cleanupAutoPilot, setState, isAutoPilotEnabled, removeDockInit } from "../../core/autopilot";
+import { trackCommand } from "../../core/analytics";
 
 async function removeKnownHost(ip: string): Promise<void> {
   try {
@@ -29,49 +30,51 @@ export async function destroy(_args: string[]): Promise<void> {
   const outputs = await terraformOutput();
   const instanceIp = outputs?.public_ip;
 
-  // Cleanup auto-pilot connections before destroy
-  if (isAutoPilotEnabled()) {
-    await cleanupAutoPilot();
-  }
+  await trackCommand("destroy", async () => {
+    // Cleanup auto-pilot connections before destroy
+    if (isAutoPilotEnabled()) {
+      await cleanupAutoPilot();
+    }
 
-  console.log("Destroying remote development environment...\n");
-  console.log("This will delete:");
-  console.log("  - Instance and all data");
-  console.log("  - SSH key");
-  console.log("  - Security group");
-  console.log("  - Flexible IP (if any)");
-  console.log("");
+    console.log("Destroying remote development environment...\n");
+    console.log("This will delete:");
+    console.log("  - Instance and all data");
+    console.log("  - SSH key");
+    console.log("  - Security group");
+    console.log("  - Flexible IP (if any)");
+    console.log("");
 
-  const config = loadConfig();
+    const config = loadConfig();
 
-  await terraformDestroy({
-    autoApprove: true,
-    vars: {
-      scw_access_key: config.scwAccessKey,
-      scw_secret_key: config.scwSecretKey,
-      scw_project_id: config.scwProjectId,
-      ssh_public_key_path: config.sshPublicKeyPath,
-      ssh_private_key_path: config.sshPrivateKeyPath,
-      region: config.region,
-      zone: config.zone,
-      instance_type: config.instanceType,
-      instance_image: config.instanceImage,
-      instance_name: config.instanceName,
-      kubernetes_engine: config.kubernetesEngine,
-      use_reserved_ip: config.useReservedIp,
-    },
+    await terraformDestroy({
+      autoApprove: true,
+      vars: {
+        scw_access_key: config.scwAccessKey,
+        scw_secret_key: config.scwSecretKey,
+        scw_project_id: config.scwProjectId,
+        ssh_public_key_path: config.sshPublicKeyPath,
+        ssh_private_key_path: config.sshPrivateKeyPath,
+        region: config.region,
+        zone: config.zone,
+        instance_type: config.instanceType,
+        instance_image: config.instanceImage,
+        instance_name: config.instanceName,
+        kubernetes_engine: config.kubernetesEngine,
+        use_reserved_ip: config.useReservedIp,
+      },
+    });
+
+    // Clean up SSH known_hosts entry
+    if (instanceIp) {
+      await removeKnownHost(instanceIp);
+    }
+
+    // Update auto-pilot state
+    setState("absent");
+    removeDockInit();
+
+    console.log("\n----------------------------------------");
+    console.log("Environment destroyed. Zero resources remaining.");
+    console.log("----------------------------------------");
   });
-
-  // Clean up SSH known_hosts entry
-  if (instanceIp) {
-    await removeKnownHost(instanceIp);
-  }
-
-  // Update auto-pilot state
-  setState("absent");
-  removeDockInit();
-
-  console.log("\n----------------------------------------");
-  console.log("Environment destroyed. Zero resources remaining.");
-  console.log("----------------------------------------");
 }
