@@ -72,10 +72,30 @@ export async function createSnapshot(
   ]);
   const serverData = JSON.parse(serverOutput);
 
-  // Get root volume (usually index 0)
-  const rootVolume = serverData.volumes?.["0"];
-  if (!rootVolume) {
-    throw new Error("Could not find root volume for instance");
+  // Get root volume - handle different API response formats
+  let rootVolume = null;
+
+  // Try volumes["0"] format
+  if (serverData.volumes?.["0"]) {
+    rootVolume = serverData.volumes["0"];
+  }
+  // Try volumes as array
+  else if (Array.isArray(serverData.volumes) && serverData.volumes.length > 0) {
+    rootVolume = serverData.volumes[0];
+  }
+  // Try root_volume property
+  else if (serverData.root_volume) {
+    rootVolume = serverData.root_volume;
+  }
+  // Try image.root_volume
+  else if (serverData.image?.root_volume) {
+    rootVolume = serverData.image.root_volume;
+  }
+
+  if (!rootVolume || !rootVolume.id) {
+    console.error("Server data volumes:", JSON.stringify(serverData.volumes, null, 2));
+    console.error("Server data root_volume:", JSON.stringify(serverData.root_volume, null, 2));
+    throw new Error("Could not find root volume for instance. Check server response above.");
   }
 
   const volumeId = rootVolume.id;
