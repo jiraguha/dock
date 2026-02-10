@@ -75,49 +75,76 @@ export async function createSnapshot(
   // Get root volume - handle different API response formats
   let rootVolume = null;
 
-  // Try volumes["0"] format
-  if (serverData.volumes?.["0"]) {
+  // Try Volumes array (capital V - newer API format)
+  if (Array.isArray(serverData.Volumes) && serverData.Volumes.length > 0) {
+    rootVolume = serverData.Volumes[0];
+  }
+  // Try volumes["0"] format (older API)
+  else if (serverData.volumes?.["0"]) {
     rootVolume = serverData.volumes["0"];
   }
-  // Try volumes as array
+  // Try volumes as array (lowercase)
   else if (Array.isArray(serverData.volumes) && serverData.volumes.length > 0) {
     rootVolume = serverData.volumes[0];
   }
-  // Try root_volume property
-  else if (serverData.root_volume) {
-    rootVolume = serverData.root_volume;
-  }
-  // Try image.root_volume
-  else if (serverData.image?.root_volume) {
-    rootVolume = serverData.image.root_volume;
-  }
 
   if (!rootVolume || !rootVolume.id) {
+    console.error("Server data Volumes:", JSON.stringify(serverData.Volumes, null, 2));
     console.error("Server data volumes:", JSON.stringify(serverData.volumes, null, 2));
-    console.error("Server data root_volume:", JSON.stringify(serverData.root_volume, null, 2));
     throw new Error("Could not find root volume for instance. Check server response above.");
   }
 
   const volumeId = rootVolume.id;
+  const volumeType = rootVolume.volume_type ?? "";
+  const isSbsVolume = volumeType.includes("sbs");
   const snapshotName = generateSnapshotName(instanceType, baseImage, zone);
 
   console.log(`Creating snapshot from volume ${volumeId}...`);
+  console.log(`Volume type: ${volumeType}${isSbsVolume ? " (block storage)" : ""}`);
   console.log(`Snapshot name: ${snapshotName}`);
 
-  // Create snapshot from volume
-  const snapshotOutput = await runScw([
-    "instance",
-    "snapshot",
-    "create",
-    `volume-id=${volumeId}`,
-    `name=${snapshotName}`,
-    `zone=${zone}`,
-    "-o",
-    "json",
-    "--wait",
-  ]);
-  const snapshotData = JSON.parse(snapshotOutput);
-  const snapshotId = snapshotData.snapshot.id;
+  let snapshotId: string;
+
+  if (isSbsVolume) {
+    // Use block storage API for SBS volumes
+    const snapshotOutput = await runScw([
+      "block",
+      "snapshot",
+      "create",
+      `volume-id=${volumeId}`,
+      `name=${snapshotName}`,
+      `zone=${zone}`,
+      "-o",
+      "json",
+    ]);
+    const snapshotData = JSON.parse(snapshotOutput);
+    snapshotId = snapshotData.id;
+
+    // Wait for snapshot to be available
+    console.log("Waiting for snapshot to be ready...");
+    await runScw([
+      "block",
+      "snapshot",
+      "wait",
+      snapshotId,
+      `zone=${zone}`,
+    ]);
+  } else {
+    // Use instance API for local volumes
+    const snapshotOutput = await runScw([
+      "instance",
+      "snapshot",
+      "create",
+      `volume-id=${volumeId}`,
+      `name=${snapshotName}`,
+      `zone=${zone}`,
+      "-o",
+      "json",
+      "--wait",
+    ]);
+    const snapshotData = JSON.parse(snapshotOutput);
+    snapshotId = snapshotData.snapshot.id;
+  }
 
   console.log(`Snapshot created: ${snapshotId}`);
   console.log("Creating bootable image from snapshot...");
