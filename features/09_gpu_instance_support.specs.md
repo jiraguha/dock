@@ -13,7 +13,7 @@ Error: could not get image 'fr-par-1/ubuntu_jammy': scaleway-sdk-go:
 couldn't find a local image for the given zone (fr-par-1) and commercial type (L4-1-24G)
 ```
 
-## Solution (v0.1.12)
+## Solution (v0.1.13)
 
 ### Auto-Detection
 
