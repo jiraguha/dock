@@ -16,7 +16,13 @@ locals {
   is_gpu_instance = can(regex("^(GPU-|RENDER-|L4-|L40S-|H100-)", var.instance_type))
 
   # Auto-select image: GPU instances need gpu-os-12, others use ubuntu_jammy
-  instance_image = var.instance_image != "" ? var.instance_image : (local.is_gpu_instance ? "gpu-os-12" : "ubuntu_jammy")
+  default_image = var.instance_image != "" ? var.instance_image : (local.is_gpu_instance ? "gpu-os-12" : "ubuntu_jammy")
+
+  # Use snapshot image if provided, otherwise use default image
+  instance_image = var.snapshot_image_id != "" ? var.snapshot_image_id : local.default_image
+
+  # Skip cloud-init when booting from snapshot
+  use_cloud_init = !var.skip_provisioning
 }
 
 # Security Group
@@ -59,9 +65,10 @@ resource "scaleway_instance_server" "dock" {
   # Enable public IP
   ip_id = var.use_reserved_ip ? scaleway_instance_ip.dock[0].id : scaleway_instance_ip.dynamic[0].id
 
-  user_data = {
+  # Only include cloud-init when not booting from snapshot
+  user_data = local.use_cloud_init ? {
     cloud-init = local.cloud_init
-  }
+  } : {}
 
   root_volume {
     size_in_gb            = 40

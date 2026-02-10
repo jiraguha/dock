@@ -16,6 +16,7 @@ import { autocomplete } from "./commands/autocomplete";
 import { connection } from "./commands/connection";
 import { init } from "./commands/init";
 import { analytics } from "./commands/analytics";
+import { snapshot } from "./commands/snapshot";
 import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, cpSync } from "fs";
@@ -39,6 +40,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   connection,
   init,
   analytics,
+  snapshot,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -112,6 +114,7 @@ Commands:
   connection    Manage connections (--refresh, --clean)
   init          Set up shell integration (one-time)
   analytics     Show usage stats and operation history
+  snapshot      Create/list snapshots for faster startups
   upgrade       Upgrade dock to latest version
   version       Show current version
   autocomplete  Set up shell autocompletion
@@ -160,6 +163,9 @@ Examples:
   dock init                # Set up shell integration (auto-source dock.init)
   dock analytics           # Show usage stats summary
   dock analytics --last    # Show last 10 operations
+  dock snapshot --create   # Create snapshot from running instance
+  dock snapshot --list     # List available snapshots
+  dock create --snapshot   # Create from latest matching snapshot (fast)
 `);
 }
 

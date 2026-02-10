@@ -65,4 +65,6 @@ export interface TerraformVars {
   instance_name?: string;
   kubernetes_engine?: string;
   use_reserved_ip?: boolean;
+  snapshot_image_id?: string;
+  skip_provisioning?: boolean;
 }

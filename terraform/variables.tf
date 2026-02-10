@@ -85,3 +85,15 @@ variable "ssh_max_sessions" {
   type        = number
   default     = 100
 }
+
+variable "snapshot_image_id" {
+  description = "Image ID from snapshot to boot from (skips normal image selection)"
+  type        = string
+  default     = ""
+}
+
+variable "skip_provisioning" {
+  description = "Skip cloud-init provisioning (for snapshot boots)"
+  type        = bool
+  default     = false
+}

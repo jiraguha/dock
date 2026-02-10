@@ -9,9 +9,10 @@ import {
   terraformOutput,
 } from "../../core/terraform";
 import { detectState } from "../../core/state";
-import { fetchKubeconfig, waitForKubeReady } from "../../provisioning/kubeconfig";
+import { fetchKubeconfig, waitForKubeReady, waitForSsh } from "../../provisioning/kubeconfig";
 import { setupAutoPilot, isAutoPilotEnabled } from "../../core/autopilot";
 import { trackCommand } from "../../core/analytics";
+import { findLatestSnapshot, findSnapshotByName, SnapshotMetadata } from "../../core/snapshot";
 
 async function addToKnownHosts(ip: string): Promise<void> {
   const knownHostsPath = join(homedir(), ".ssh", "known_hosts");
@@ -40,7 +41,41 @@ async function addToKnownHosts(ip: string): Promise<void> {
   }
 }
 
-export async function create(_args: string[]): Promise<void> {
+async function resolveSnapshot(
+  args: string[],
+  config: { instanceType: string; zone: string }
+): Promise<SnapshotMetadata | null> {
+  const snapshotIndex = args.indexOf("--snapshot");
+  if (snapshotIndex === -1) {
+    return null;
+  }
+
+  const snapshotArg = args[snapshotIndex + 1];
+
+  // If no argument or next arg is another flag, find latest matching
+  if (!snapshotArg || snapshotArg.startsWith("-")) {
+    const snapshot = await findLatestSnapshot(config.instanceType, config.zone);
+    if (!snapshot) {
+      throw new Error(
+        `No snapshot found for instance type ${config.instanceType} in zone ${config.zone}.\n` +
+          "Create one first with: dock snapshot --create"
+      );
+    }
+    return snapshot;
+  }
+
+  // Specific snapshot name provided
+  const snapshot = await findSnapshotByName(snapshotArg);
+  if (!snapshot) {
+    throw new Error(
+      `Snapshot not found: ${snapshotArg}\n` +
+        "List available snapshots with: dock snapshot --list"
+    );
+  }
+  return snapshot;
+}
+
+export async function create(args: string[]): Promise<void> {
   const currentState = await detectState();
 
   if (currentState.state === "running") {
@@ -57,10 +92,18 @@ export async function create(_args: string[]): Promise<void> {
     return;
   }
 
-  await trackCommand("create", async () => {
-    console.log("Creating remote development environment...\n");
+  const config = loadConfig();
+  const snapshot = await resolveSnapshot(args, config);
+  const fromSnapshot = snapshot !== null;
 
-    const config = loadConfig();
+  await trackCommand("create", async () => {
+    if (fromSnapshot) {
+      console.log("\uD83D\uDE80 Launching from snapshot: provisioning skipped.\n");
+      console.log(`Snapshot: ${snapshot.name}`);
+      console.log(`Image ID: ${snapshot.imageId}\n`);
+    } else {
+      console.log("Creating remote development environment...\n");
+    }
 
     console.log("Initializing Terraform...\n");
     await terraformInit();
@@ -81,6 +124,8 @@ export async function create(_args: string[]): Promise<void> {
         instance_name: config.instanceName,
         kubernetes_engine: config.kubernetesEngine,
         use_reserved_ip: config.useReservedIp,
+        snapshot_image_id: snapshot?.imageId ?? "",
+        skip_provisioning: fromSnapshot,
       },
     });
 
@@ -89,8 +134,14 @@ export async function create(_args: string[]): Promise<void> {
       throw new Error("Failed to read Terraform outputs");
     }
 
-    console.log("\nWaiting for provisioning to complete...");
-    await waitForKubeReady(outputs.public_ip, config.sshPrivateKeyPath);
+    if (fromSnapshot) {
+      // Just wait for SSH when booting from snapshot (already provisioned)
+      console.log("\nWaiting for instance to be ready...");
+      await waitForSsh(outputs.public_ip, config.sshPrivateKeyPath);
+    } else {
+      console.log("\nWaiting for provisioning to complete...");
+      await waitForKubeReady(outputs.public_ip, config.sshPrivateKeyPath);
+    }
 
     // Add host key to known_hosts so Docker over SSH works immediately
     await addToKnownHosts(outputs.public_ip);
@@ -106,6 +157,9 @@ export async function create(_args: string[]): Promise<void> {
     console.log("----------------------------------------");
     console.log(`IP:         ${outputs.public_ip}`);
     console.log(`SSH:        ${outputs.ssh_command}`);
+    if (fromSnapshot) {
+      console.log(`Snapshot:   ${snapshot.name}`);
+    }
 
     // Auto-pilot setup
     if (isAutoPilotEnabled()) {
