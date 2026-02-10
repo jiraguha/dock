@@ -45,6 +45,12 @@ variable "instance_type" {
   default     = "DEV1-M"
 }
 
+variable "instance_image" {
+  description = "Instance image (auto-detected for GPU instances if not set)"
+  type        = string
+  default     = ""
+}
+
 variable "instance_name" {
   description = "Name for the instance"
   type        = string

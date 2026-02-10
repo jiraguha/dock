@@ -12,6 +12,7 @@ export interface Config {
   region: string;
   zone: string;
   instanceType: string;
+  instanceImage: string;
   instanceName: string;
   kubernetesEngine: "k3s" | "kind";
   useReservedIp: boolean;
@@ -60,6 +61,7 @@ export interface TerraformVars {
   region?: string;
   zone?: string;
   instance_type?: string;
+  instance_image?: string;
   instance_name?: string;
   kubernetes_engine?: string;
   use_reserved_ip?: boolean;

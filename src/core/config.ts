@@ -55,6 +55,7 @@ const DEFAULT_CONFIG: Omit<Config, "scwAccessKey" | "scwSecretKey" | "scwProject
   region: "fr-par",
   zone: "fr-par-1",
   instanceType: "DEV1-M",
+  instanceImage: "", // Empty = auto-detect (gpu-os-12 for GPU, ubuntu_jammy for others)
   instanceName: "dock-env",
   kubernetesEngine: "k3s",
   useReservedIp: false,
@@ -102,6 +103,7 @@ export function loadConfig(): Config {
     region: process.env["SCW_REGION"] ?? DEFAULT_CONFIG.region,
     zone: process.env["SCW_ZONE"] ?? DEFAULT_CONFIG.zone,
     instanceType: process.env["SCW_INSTANCE_TYPE"] ?? DEFAULT_CONFIG.instanceType,
+    instanceImage: process.env["SCW_INSTANCE_IMAGE"] ?? DEFAULT_CONFIG.instanceImage,
     instanceName: process.env["SCW_INSTANCE_NAME"] ?? DEFAULT_CONFIG.instanceName,
     kubernetesEngine:
       (process.env["K8S_ENGINE"] as "k3s" | "kind") ??

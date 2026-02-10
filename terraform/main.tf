@@ -11,6 +11,12 @@ locals {
     ssh_max_startups  = var.ssh_max_startups
     ssh_max_sessions  = var.ssh_max_sessions
   })
+
+  # Detect if this is a GPU instance (L4, L40S, H100, GPU-, RENDER-)
+  is_gpu_instance = can(regex("^(GPU-|RENDER-|L4-|L40S-|H100-)", var.instance_type))
+
+  # Auto-select image: GPU instances need gpu-os-12, others use ubuntu_jammy
+  instance_image = var.instance_image != "" ? var.instance_image : (local.is_gpu_instance ? "gpu-os-12" : "ubuntu_jammy")
 }
 
 # Security Group
@@ -44,7 +50,7 @@ resource "scaleway_instance_security_group" "dock" {
 resource "scaleway_instance_server" "dock" {
   name  = var.instance_name
   type  = var.instance_type
-  image = "ubuntu_jammy"
+  image = local.instance_image
 
   tags = ["dock", "disposable"]
 

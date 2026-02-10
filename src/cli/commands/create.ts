@@ -74,6 +74,7 @@ export async function create(_args: string[]): Promise<void> {
       region: config.region,
       zone: config.zone,
       instance_type: config.instanceType,
+      instance_image: config.instanceImage,
       instance_name: config.instanceName,
       kubernetes_engine: config.kubernetesEngine,
       use_reserved_ip: config.useReservedIp,
