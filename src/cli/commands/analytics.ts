@@ -44,6 +44,15 @@ function formatDuration(seconds: number): string {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
+function formatTimestamp(isoString: string): string {
+  const date = new Date(isoString);
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${month}-${day} ${hours}:${minutes}`;
+}
+
 export async function analytics(args: string[]): Promise<void> {
   const analyticsPath = getAnalyticsPath();
 
@@ -69,21 +78,21 @@ export async function analytics(args: string[]): Promise<void> {
     const toShow = entries.slice(-count);
 
     console.log("Recent Operations:");
-    console.log("─".repeat(80));
+    console.log("─".repeat(70));
     console.log(
-      "Timestamp".padEnd(22) +
+      "Timestamp".padEnd(14) +
         "Command".padEnd(10) +
         "Type".padEnd(12) +
         "Zone".padEnd(12) +
         "Duration".padEnd(12) +
         "Status"
     );
-    console.log("─".repeat(80));
+    console.log("─".repeat(70));
 
     for (const entry of toShow) {
-      const date = new Date(entry.startTimestamp).toLocaleString();
+      const ts = formatTimestamp(entry.startTimestamp);
       console.log(
-        date.padEnd(22) +
+        ts.padEnd(14) +
           entry.command.padEnd(10) +
           entry.instanceType.padEnd(12) +
           entry.zone.padEnd(12) +
@@ -91,7 +100,7 @@ export async function analytics(args: string[]): Promise<void> {
           entry.status
       );
     }
-    console.log("─".repeat(80));
+    console.log("─".repeat(70));
     return;
   }
 

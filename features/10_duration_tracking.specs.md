@@ -103,3 +103,19 @@ startTimestamp,command,instanceType,instanceImage,zone,duration
 - `src/cli/commands/stop.ts` - Wrapped with duration tracking
 - `src/cli/commands/destroy.ts` - Wrapped with duration tracking
 - `src/cli/index.ts` - Registered analytics command
+
+# Issue 1 ✅ RESOLVED
+
+**Problem:** Timestamp format too long and no space between columns.
+
+**Solution (v0.1.16):** Changed timestamp format to compact `MM-DD HH:MM` and fixed column spacing.
+
+```
+Recent Operations:
+──────────────────────────────────────────────────────────────────────
+Timestamp     Command   Type        Zone        Duration    Status
+──────────────────────────────────────────────────────────────────────
+02-10 23:42   destroy   L4-1-24G    fr-par-2    00:00:00    success
+02-10 23:43   create    DEV1-M      fr-par-1    00:02:56    success
+──────────────────────────────────────────────────────────────────────
+```
