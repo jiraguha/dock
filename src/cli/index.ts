@@ -17,9 +17,10 @@ import { connection } from "./commands/connection";
 import { init } from "./commands/init";
 import { analytics } from "./commands/analytics";
 import { snapshot } from "./commands/snapshot";
-import { loadDockEnv, DOCK_HOME, getTerraformDir, getSourceTerraformDir } from "../core/config";
+import { loadDockEnv, DOCK_HOME, getTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
-import { existsSync, mkdirSync, cpSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { TERRAFORM_FILES } from "../core/terraform-files";
 
 const commands: Record<string, (args: string[]) => Promise<void>> = {
   create,
@@ -49,12 +50,25 @@ async function ensureDockHome(): Promise<void> {
     mkdirSync(DOCK_HOME, { recursive: true });
   }
 
-  // Copy terraform files to ~/.dock/terraform if not present
+  // Always sync terraform config files from embedded files
   const terraformDir = getTerraformDir();
-  const sourceTerraformDir = getSourceTerraformDir();
 
-  if (!existsSync(terraformDir) && existsSync(sourceTerraformDir)) {
-    cpSync(sourceTerraformDir, terraformDir, { recursive: true });
+  // Create terraform dir if needed
+  if (!existsSync(terraformDir)) {
+    mkdirSync(terraformDir, { recursive: true });
+  }
+
+  // Write all embedded terraform files (always overwrite to ensure latest)
+  for (const [filename, content] of Object.entries(TERRAFORM_FILES)) {
+    const filePath = `${terraformDir}/${filename}`;
+
+    // Create subdirectories if needed (e.g., cloud-init/)
+    const dir = filePath.substring(0, filePath.lastIndexOf("/"));
+    if (dir !== terraformDir && !existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
+
+    writeFileSync(filePath, content);
   }
 }
 

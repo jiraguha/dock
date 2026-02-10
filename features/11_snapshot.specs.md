@@ -166,3 +166,14 @@ dock create --snapshot <snapshotName>
 - Detect SBS volume type (sbs_5k, etc.)
 - Use `scw block snapshot create` for SBS volumes
 - Use `scw instance snapshot create` for local volumes
+
+# Issue 2 ✅ RESOLVED
+
+**Problem:** `dock create --snapshot` fails with "undeclared variable" error for `snapshot_image_id` and `skip_provisioning`.
+
+**Root cause:** Compiled binary couldn't sync terraform files from source directory. The `~/.dock/terraform/` had outdated variables.tf without the new snapshot variables.
+
+**Solution (v0.1.17):**
+- Embedded all terraform files directly in the binary (`src/core/terraform-files.ts`)
+- On every dock command, terraform config files are written to `~/.dock/terraform/`
+- This ensures the binary always has matching terraform configuration

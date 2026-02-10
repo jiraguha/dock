@@ -21,17 +21,22 @@ const COMMANDS = [
   "autocomplete",
   "connection",
   "init",
+  "analytics",
+  "snapshot",
 ];
 
 const BASH_COMPLETION = `# dock bash completion
 _dock_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection init"
+  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection init analytics snapshot"
 
   if [[ \${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
   elif [[ \${COMP_CWORD} -eq 2 ]]; then
     case "\${COMP_WORDS[1]}" in
+      create)
+        COMPREPLY=($(compgen -W "--snapshot" -- "\${cur}"))
+        ;;
       portforward)
         COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
         ;;
@@ -55,6 +60,12 @@ _dock_completions() {
         ;;
       init)
         COMPREPLY=($(compgen -W "--remove --help" -- "\${cur}"))
+        ;;
+      analytics)
+        COMPREPLY=($(compgen -W "--last --all" -- "\${cur}"))
+        ;;
+      snapshot)
+        COMPREPLY=($(compgen -W "--create --list" -- "\${cur}"))
         ;;
     esac
   fi
@@ -84,6 +95,8 @@ _dock() {
     'autocomplete:Set up shell autocompletion'
     'connection:Manage connections (refresh, clean)'
     'init:Set up shell integration (one-time)'
+    'analytics:Show usage stats and operation history'
+    'snapshot:Create/list snapshots for faster startups'
   )
 
   _arguments -C \\
@@ -96,6 +109,9 @@ _dock() {
       ;;
     args)
       case $words[2] in
+        create)
+          _arguments '--snapshot[Boot from snapshot (fast startup)]'
+          ;;
         portforward)
           _arguments \\
             '-d[Run in background]' \\
@@ -137,6 +153,16 @@ _dock() {
           _arguments \\
             '--remove[Remove shell integration]' \\
             '--help[Show help]'
+          ;;
+        analytics)
+          _arguments \\
+            '--last[Show last 10 operations]' \\
+            '--all[Show all operations]'
+          ;;
+        snapshot)
+          _arguments \\
+            '--create[Create snapshot from running instance]' \\
+            '--list[List available snapshots]'
           ;;
       esac
       ;;
