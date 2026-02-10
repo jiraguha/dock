@@ -154,3 +154,15 @@ dock create --snapshot <snapshotName>
 - `src/types/index.ts` - Added snapshot_image_id and skip_provisioning to TerraformVars
 - `terraform/variables.tf` - Added snapshot_image_id and skip_provisioning variables
 - `terraform/main.tf` - Conditional cloud-init based on skip_provisioning
+
+# Issue 1 ✅ RESOLVED
+
+**Problem:** Could not find root volume for instance - two issues:
+1. API returns `Volumes` (capital V) not `volumes`
+2. SBS block storage volumes need different API (`scw block snapshot` vs `scw instance snapshot`)
+
+**Solution (v0.1.16):**
+- Check `Volumes` array first (newer API format)
+- Detect SBS volume type (sbs_5k, etc.)
+- Use `scw block snapshot create` for SBS volumes
+- Use `scw instance snapshot create` for local volumes
