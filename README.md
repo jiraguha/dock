@@ -89,7 +89,7 @@ kubectl get nodes           # Kubernetes works automatically
 ## Prerequisites
 
 - [Terraform](https://terraform.io) CLI
-- [Scaleway CLI](https://github.com/scaleway/scaleway-cli) (`scw`) - authenticated
+- [Scaleway CLI](https://github.com/scaleway/scaleway-cli) (`scw`)
 - Scaleway API credentials
 - SSH key pair (`~/.ssh/id_ed25519` or `~/.ssh/id_rsa`)
 
