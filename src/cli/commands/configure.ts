@@ -3,6 +3,22 @@ import { detectState } from "../../core/state";
 import { loadConfig } from "../../core/config";
 
 export async function configure(args: string[]): Promise<void> {
+  // Handle --help before state check
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock configure [options]");
+    console.log("");
+    console.log("Apply SSH server configuration to the remote instance.");
+    console.log("");
+    console.log("Options:");
+    console.log("  --show, -s   Show current remote SSH configuration");
+    console.log("  --help, -h   Show this help message");
+    console.log("");
+    console.log("Configuration values are set via environment variables:");
+    console.log("  SSH_MAX_STARTUPS  MaxStartups setting (default: 100:30:200)");
+    console.log("  SSH_MAX_SESSIONS  MaxSessions setting (default: 100)");
+    return;
+  }
+
   const state = await detectState();
 
   if (state.state !== "running") {

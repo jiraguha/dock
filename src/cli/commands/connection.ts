@@ -2,6 +2,19 @@ import { refreshConnections, cleanConnections, getState } from "../../core/autop
 import { detectState } from "../../core/state";
 
 export async function connection(args: string[]): Promise<void> {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock connection [options]");
+    console.log("");
+    console.log("Manage dock connections (SSH, port forwarding, Docker tunnel).");
+    console.log("");
+    console.log("Options:");
+    console.log("  --status     Show connection status (default)");
+    console.log("  --refresh    Restart all connections");
+    console.log("  --clean      Stop all connections");
+    console.log("  --help, -h   Show this help");
+    return;
+  }
+
   const refreshFlag = args.includes("--refresh");
   const cleanFlag = args.includes("--clean");
   const statusFlag = args.includes("--status") || args.length === 0;

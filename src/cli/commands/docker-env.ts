@@ -1,6 +1,19 @@
 import { detectState } from "../../core/state";
 
-export async function dockerEnv(_args: string[]): Promise<void> {
+export async function dockerEnv(args: string[]): Promise<void> {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock docker-env");
+    console.log("");
+    console.log("Print DOCKER_HOST export command for the remote environment.");
+    console.log("");
+    console.log("Use with eval to set the environment variable:");
+    console.log("  eval $(dock docker-env)");
+    console.log("");
+    console.log("This enables SSH-per-command Docker usage. For heavy use");
+    console.log("(many containers), prefer 'dock docker-tunnel' instead.");
+    return;
+  }
+
   const state = await detectState();
 
   if (state.state !== "running") {

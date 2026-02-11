@@ -8,6 +8,29 @@ import {
 } from "../../core/portforward";
 
 export async function portforward(args: string[]): Promise<void> {
+  // Check for --help flag first
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock portforward [options] [ports...]");
+    console.log("");
+    console.log("Forward ports from the remote environment to localhost.");
+    console.log("");
+    console.log("Options:");
+    console.log("  -d, --daemon     Run in background");
+    console.log("  --stop           Stop background tunnel");
+    console.log("  --status         Show tunnel status");
+    console.log("  --help, -h       Show this help");
+    console.log("");
+    console.log("Arguments:");
+    console.log("  ports            Specific ports to forward (default: FORWARD_PORTS env)");
+    console.log("");
+    console.log("Examples:");
+    console.log("  dock portforward           # Forward default ports (foreground)");
+    console.log("  dock portforward -d        # Forward in background");
+    console.log("  dock portforward 8080 3000 # Forward specific ports");
+    console.log("  dock portforward --stop    # Stop background tunnel");
+    return;
+  }
+
   // Check for --stop flag
   if (args.includes("--stop") || args.includes("-s")) {
     await handleStop();

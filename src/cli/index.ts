@@ -17,6 +17,7 @@ import { connection } from "./commands/connection";
 import { init } from "./commands/init";
 import { analytics } from "./commands/analytics";
 import { snapshot } from "./commands/snapshot";
+import { env } from "./commands/env";
 import { loadDockEnv, DOCK_HOME, getTerraformDir } from "../core/config";
 import { VERSION } from "../core/upgrade";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
@@ -42,6 +43,7 @@ const commands: Record<string, (args: string[]) => Promise<void>> = {
   init,
   analytics,
   snapshot,
+  env,
 };
 
 async function ensureDockHome(): Promise<void> {
@@ -129,6 +131,7 @@ Commands:
   init          Set up shell integration (one-time)
   analytics     Show usage stats and operation history
   snapshot      Create/list snapshots for faster startups
+  env           Manage environment variables (~/.dock/.env)
   upgrade       Upgrade dock to latest version
   version       Show current version
   autocomplete  Set up shell autocompletion
@@ -180,6 +183,9 @@ Examples:
   dock snapshot --create   # Create snapshot from running instance
   dock snapshot --list     # List available snapshots
   dock create --snapshot   # Create from latest matching snapshot (fast)
+  dock env                 # List environment configuration
+  dock env --set KEY=val   # Set environment variable
+  dock env --unset KEY     # Remove environment variable
 `);
 }
 

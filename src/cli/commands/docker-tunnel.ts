@@ -10,6 +10,25 @@ const DOCKER_SOCKET_PATH = join(SOCKET_DIR, "docker.sock");
 const PID_FILE = join(DOCK_HOME, "docker-tunnel.pid");
 
 export async function dockerTunnel(args: string[]): Promise<void> {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock docker-tunnel [options]");
+    console.log("");
+    console.log("Forward Docker socket from remote to local via SSH tunnel.");
+    console.log("Recommended for heavy Docker usage (many containers).");
+    console.log("");
+    console.log("Options:");
+    console.log("  -d, --daemon   Run tunnel in background");
+    console.log("  --stop         Stop the background tunnel");
+    console.log("  --status       Show tunnel status");
+    console.log("  --help, -h     Show this help");
+    console.log("");
+    console.log("Examples:");
+    console.log("  dock docker-tunnel        # Start in foreground");
+    console.log("  dock docker-tunnel -d     # Start in background");
+    console.log("  dock docker-tunnel --stop # Stop background tunnel");
+    return;
+  }
+
   const stopFlag = args.includes("--stop");
   const statusFlag = args.includes("--status");
   const daemon = args.includes("-d") || args.includes("--daemon");

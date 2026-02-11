@@ -23,49 +23,74 @@ const COMMANDS = [
   "init",
   "analytics",
   "snapshot",
+  "env",
 ];
 
 const BASH_COMPLETION = `# dock bash completion
 _dock_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
-  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection init analytics snapshot"
+  local commands="create destroy status ssh ssh-config start stop kubeconfig docker-env docker-tunnel portforward configure upgrade version autocomplete connection init analytics snapshot env"
 
   if [[ \${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=($(compgen -W "\${commands}" -- "\${cur}"))
   elif [[ \${COMP_CWORD} -eq 2 ]]; then
     case "\${COMP_WORDS[1]}" in
       create)
-        COMPREPLY=($(compgen -W "--snapshot" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--snapshot --help" -- "\${cur}"))
+        ;;
+      destroy)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      status)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      ssh)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      start)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      stop)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      kubeconfig)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
+        ;;
+      docker-env)
+        COMPREPLY=($(compgen -W "--help" -- "\${cur}"))
         ;;
       portforward)
-        COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "-d --stop --status --help" -- "\${cur}"))
         ;;
       docker-tunnel)
-        COMPREPLY=($(compgen -W "-d --stop --status" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "-d --stop --status --help" -- "\${cur}"))
         ;;
       ssh-config)
-        COMPREPLY=($(compgen -W "--show --remove --start-master --stop-master" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--show --remove --start-master --stop-master --help" -- "\${cur}"))
         ;;
       configure)
-        COMPREPLY=($(compgen -W "--show" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--show --help" -- "\${cur}"))
         ;;
       upgrade)
-        COMPREPLY=($(compgen -W "--check" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--check --help" -- "\${cur}"))
         ;;
       autocomplete)
-        COMPREPLY=($(compgen -W "--generate --bash --zsh" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--generate --bash --zsh --help" -- "\${cur}"))
         ;;
       connection)
-        COMPREPLY=($(compgen -W "--refresh --clean --status" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--refresh --clean --status --help" -- "\${cur}"))
         ;;
       init)
         COMPREPLY=($(compgen -W "--remove --help" -- "\${cur}"))
         ;;
       analytics)
-        COMPREPLY=($(compgen -W "--last --all" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--last --all --help" -- "\${cur}"))
         ;;
       snapshot)
-        COMPREPLY=($(compgen -W "--create --list" -- "\${cur}"))
+        COMPREPLY=($(compgen -W "--create --list --delete --help" -- "\${cur}"))
+        ;;
+      env)
+        COMPREPLY=($(compgen -W "--list --set --unset --help" -- "\${cur}"))
         ;;
     esac
   fi
@@ -97,6 +122,7 @@ _dock() {
     'init:Set up shell integration (one-time)'
     'analytics:Show usage stats and operation history'
     'snapshot:Create/list snapshots for faster startups'
+    'env:Manage environment variables'
   )
 
   _arguments -C \\
@@ -110,44 +136,58 @@ _dock() {
     args)
       case $words[2] in
         create)
-          _arguments '--snapshot[Boot from snapshot (fast startup)]'
+          _arguments \\
+            '--snapshot[Boot from snapshot (fast startup)]' \\
+            '--help[Show help]'
+          ;;
+        destroy|status|ssh|start|stop|kubeconfig|docker-env|version)
+          _arguments '--help[Show help]'
           ;;
         portforward)
           _arguments \\
             '-d[Run in background]' \\
             '--stop[Stop background tunnel]' \\
-            '--status[Show tunnel status]'
+            '--status[Show tunnel status]' \\
+            '--help[Show help]'
           ;;
         docker-tunnel)
           _arguments \\
             '-d[Run in background]' \\
             '--stop[Stop Docker tunnel]' \\
-            '--status[Show tunnel status]'
+            '--status[Show tunnel status]' \\
+            '--help[Show help]'
           ;;
         ssh-config)
           _arguments \\
             '--show[Show current config]' \\
             '--remove[Remove dock SSH config]' \\
             '--start-master[Start master connection]' \\
-            '--stop-master[Stop master connection]'
+            '--stop-master[Stop master connection]' \\
+            '--help[Show help]'
           ;;
         configure)
-          _arguments '--show[Show remote SSH config]'
+          _arguments \\
+            '--show[Show remote SSH config]' \\
+            '--help[Show help]'
           ;;
         upgrade)
-          _arguments '--check[Check for updates only]'
+          _arguments \\
+            '--check[Check for updates only]' \\
+            '--help[Show help]'
           ;;
         autocomplete)
           _arguments \\
             '--generate[Only generate script]' \\
             '--bash[Generate bash completion]' \\
-            '--zsh[Generate zsh completion]'
+            '--zsh[Generate zsh completion]' \\
+            '--help[Show help]'
           ;;
         connection)
           _arguments \\
             '--refresh[Restart all connections]' \\
             '--clean[Stop all connections]' \\
-            '--status[Show connection status]'
+            '--status[Show connection status]' \\
+            '--help[Show help]'
           ;;
         init)
           _arguments \\
@@ -157,12 +197,22 @@ _dock() {
         analytics)
           _arguments \\
             '--last[Show last 10 operations]' \\
-            '--all[Show all operations]'
+            '--all[Show all operations]' \\
+            '--help[Show help]'
           ;;
         snapshot)
           _arguments \\
             '--create[Create snapshot from running instance]' \\
-            '--list[List available snapshots]'
+            '--list[List available snapshots]' \\
+            '--delete[Delete a snapshot]' \\
+            '--help[Show help]'
+          ;;
+        env)
+          _arguments \\
+            '--list[List environment variables]' \\
+            '--set[Set environment variables (KEY=val,KEY2=val)]' \\
+            '--unset[Remove environment variables (KEY1,KEY2)]' \\
+            '--help[Show help]'
           ;;
       esac
       ;;

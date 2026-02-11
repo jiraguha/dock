@@ -50,6 +50,24 @@ function printSnapshotTable(snapshots: SnapshotMetadata[]): void {
 }
 
 export async function snapshot(args: string[]): Promise<void> {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock snapshot [options]");
+    console.log("");
+    console.log("Manage instance snapshots for faster startup times.");
+    console.log("");
+    console.log("Options:");
+    console.log("  --create        Create snapshot from running instance");
+    console.log("  --list, -l      List available snapshots (default)");
+    console.log("  --delete <name> Delete a snapshot");
+    console.log("  --help, -h      Show this help");
+    console.log("");
+    console.log("Examples:");
+    console.log("  dock snapshot --create    # Create snapshot");
+    console.log("  dock snapshot --list      # List snapshots");
+    console.log("  dock create --snapshot    # Boot from latest snapshot");
+    return;
+  }
+
   const hasCreate = args.includes("--create");
   const hasList = args.includes("--list") || args.includes("-l");
   const hasDelete = args.includes("--delete");

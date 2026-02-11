@@ -2,7 +2,20 @@ import { detectState } from "../../core/state";
 import { loadConfig } from "../../core/config";
 import { fetchKubeconfig, getKubeconfigPath } from "../../provisioning/kubeconfig";
 
-export async function kubeconfig(_args: string[]): Promise<void> {
+export async function kubeconfig(args: string[]): Promise<void> {
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log("Usage: dock kubeconfig");
+    console.log("");
+    console.log("Fetch kubeconfig from the remote environment.");
+    console.log("");
+    console.log("Downloads the Kubernetes config file and updates the server");
+    console.log("address to point to the remote instance's public IP.");
+    console.log("");
+    console.log("Output:");
+    console.log("  Saves to: ~/.kube/dock-config");
+    return;
+  }
+
   const state = await detectState();
 
   if (state.state !== "running") {
