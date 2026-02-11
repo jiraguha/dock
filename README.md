@@ -398,6 +398,21 @@ bun install
 
 ---
 
+## Roadmap
+
+- [ ] **Automatic Shutdown (Kill Switch)** — Heartbeat mechanism to auto-shutdown inactive machines; destroy after 1 week of inactivity
+- [x] **Single Executable CLI** — Package CLI as a self-contained executable
+- [x] **Self-Upgrading CLI** — Automatic updates to latest version
+- [ ] **OpenClaw Safe Mode** — Restrict actions to safe, reversible, or sandboxed operations
+- [ ] **MCP Integration** — Machine Control Protocol for advanced lifecycle management
+- [ ] **Multi-Environment Support** — Manage multiple isolated environments (dev, staging, prod)
+- [ ] **Multi-Provider VM Support** — AWS, GCP, Azure, and other providers
+- [ ] **Web UI** — Web interface for managing environments and machines
+- [ ] **NixOS Integration** — Declarative, reproducible development environments with Nix
+- [ ] **Claude Code Integration** — AI-assisted development workflow with Claude Code
+
+---
+
 ## License
 
 MIT
